@@ -359,11 +359,6 @@ function buildArrayKeys (data) {
 function isDifferentEnough (data, cached, dataAttrKeys) {
   if (data.tag !== cached.tag) return true
 
-  if (dataAttrKeys.sort().join() !==
-				Object.keys(cached.attrs).sort().join()) {
-    return true
-  }
-
   if (data.attrs.id !== cached.attrs.id) {
     return true
   }
@@ -380,8 +375,44 @@ function isDifferentEnough (data, cached, dataAttrKeys) {
     return cached.configContext && cached.configContext.retain === false
   }
 
+  var node = cached.nodes[0]
+  if(!node) return true
+
+  if (dataAttrKeys.sort().join() !==
+				Object.keys(cached.attrs).sort().join()) {
+
+  // if (attrName === 'config' || attrName === 'key' || isLifecycleMethod(attrName)){
+  //   return true
+  // }
+    // try to patch diff node
+
+    var ns = getObjectNamespace(cached) || node.namespaceURI || node._namespace
+
+    // 1. remove all cached attrs except style
+    for(var key in cached.attrs){
+      if(key=='style') {
+        if(data.attrs.style) {
+          continue
+        }
+      }
+      if(key in node) {
+        if(ns) node.removeAttributeNS(ns, key)
+        else node.removeAttribute(key)
+        delete node[key]
+      }
+    }
+    
+    // 2. set attrs for new data
+    setAttributes(node, data.tag, data.attrs, cached.attrs, ns)
+
+    // return true
+  }
+
   return false
 }
+
+// futurist: add xor, _onremove
+function xor(x,y){return true==(!!x!==!!y)}
 
 function _onremove (cached){
   if(!cached || !cached.attrs) return
@@ -950,6 +981,11 @@ controller._domRoot = configs.root
       var node
       if (isNew) {
         node = constructNode(data, namespace)
+
+        node._namespace = namespace
+
+        node._config = data.attrs.config
+
           // set attributes first, then create children
         var attrs = constructAttrs(data, node, namespace, hasKeys)
 
