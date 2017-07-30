@@ -1693,6 +1693,7 @@ m.mount = m.module = function (root, component, path) {
 
   var index = roots.indexOf(root)
   if (index < 0) index = roots.length
+  else var ctrl = controllers[index]
 
   // futurist add: com.path to get route path
   if(component) component.path = path
@@ -1710,25 +1711,24 @@ m.mount = m.module = function (root, component, path) {
     }
   }
 
-  forEach(unloaders, function (unloader) {
-    // futurist add below:
-    // console.log(unloader.controller._domRoot, unloader.controller)
-    // not call unload for other roots!
-    if(unloader.controller._domRoot != root) return
-    unloader.handler.call(unloader.controller, event)
-    unloader.controller.onunload = null
-  })
-
-  if (isPrevented) {
+  // futurist: only unload all when route to another page
+  if(path){
     forEach(unloaders, function (unloader) {
-      unloader.controller.onunload = unloader.handler
+      unloader.handler.call(unloader.controller, event)
+      unloader.controller.onunload = null
     })
-  } else {
-    unloaders = []
+
+    if (isPrevented) {
+      forEach(unloaders, function (unloader) {
+        unloader.controller.onunload = unloader.handler
+      })
+    } else {
+      unloaders = []
+    }
   }
 
-  if (controllers[index] && isFunction(controllers[index].onunload)) {
-    controllers[index].onunload(event)
+  if (ctrl && isFunction(ctrl.onunload)) {
+    ctrl.onunload(event)
   }
 
 

@@ -1557,7 +1557,6 @@ describe("m.render()", function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", {class: ""}))
 		m.render(root, m("div", {class: 0}))
-		console.log(root.childNodes)
 		expect(root.childNodes[0].class).to.equal("0")
 	})
 
