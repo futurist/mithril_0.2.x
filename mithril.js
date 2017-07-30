@@ -398,7 +398,6 @@ function isDifferentEnough (data, cached, dataAttrKeys) {
       if(key in node) {
         if(ns) node.removeAttributeNS(ns, key)
         else node.removeAttribute(key)
-        delete node[key]
       }
     }
     
@@ -983,8 +982,6 @@ controller._domRoot = configs.root
         node = constructNode(data, namespace)
 
         node._namespace = namespace
-
-        node._config = data.attrs.config
 
           // set attributes first, then create children
         var attrs = constructAttrs(data, node, namespace, hasKeys)
