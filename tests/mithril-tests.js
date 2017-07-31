@@ -1,47 +1,64 @@
 /* global m, test, mock */
-(async function () { // eslint-disable-line max-statements
+
+var useRealDom = true
+
+function map(list, fn){
+	return [].map.call(list, fn)
+}
+
+;(async function () { // eslint-disable-line max-statements
 	"use strict"
-
-	// m.deps(mock.window)
-	var mock = window
-	function onload(){
-		return new Promise(s=>
-			window.onload = s
-		)
-	}
-	await onload()
-	console.log('onloaded', document.body, mock!=window)
-
-	window.scrollTo = function () {}
-
-	window.requestAnimationFrame.$resolve = function(){
-		return new Promise((s)=>setTimeout(s, 100))
-	}
-	// window.addEventListener('unhandledrejection', event => {
-	// 		// Prevent error output on the console:
-	// 		event.preventDefault()
-	// 		console.log('Reason: ' + event.reason)
-	// })
-	window.XMLHttpRequest = (function () {
-		function XMLHttpRequest() {
-			this.$headers = {}
-			this.setRequestHeader = function (key, value) {
-				this.$headers[key] = value
-			}
-			this.open = function (method, url) {
-				this.method = method
-				this.url = url
-			}
-			this.send = function () {
-				this.responseText = JSON.stringify(this)
-				this.readyState = 4
-				this.status = 200
-				XMLHttpRequest.$instances.push(this)
-			}
+	if(!useRealDom){
+		m.deps(mock.window)
+	} else {
+		// real dom cannot test m.route/m.request !!!
+		mock = window
+		function onload(){
+			return new Promise(s=>
+				window.onload = s
+			)
 		}
-		XMLHttpRequest.$instances = []
-		return XMLHttpRequest
-	})()
+		// await onload()  // window.onload?
+
+		console.log('onloaded', document.body, mock!=window)
+
+		window.scrollTo = function () {}
+
+		window.requestAnimationFrame.$resolve = function(){
+			return new Promise((s)=>setTimeout(s, 100))
+		}
+		// window.addEventListener('unhandledrejection', event => {
+		// 		// Prevent error output on the console:
+		// 		event.preventDefault()
+		// 		console.log('Reason: ' + event.reason)
+		// })
+		window.XMLHttpRequest = (function () {
+			function XMLHttpRequest() {
+				this.$headers = {}
+				this.setRequestHeader = function (key, value) {
+					this.$headers[key] = value
+				}
+				this.open = function (method, url) {
+					this.method = method
+					this.url = url
+				}
+				this.send = function () {
+					this.responseText = JSON.stringify(this)
+					this.readyState = 4
+					this.status = 200
+					XMLHttpRequest.$instances.push(this)
+				}
+			}
+			XMLHttpRequest.$instances = []
+			return XMLHttpRequest
+		})()
+	}
+
+	var nextFrame = ()=> {
+		const r = window.requestAnimationFrame.$resolve
+		if(r) return r()
+		else return new Promise((s=>s()))
+	}
 
 	// m
 	await test(async function () { return typeof m.version() === "string" })
@@ -1479,7 +1496,6 @@
 				return m("div", [Comp1, Comp2])
 			}
 		}
-
 		m.mount(root, Root)
 
 		await mock.requestAnimationFrame.$resolve()
@@ -1817,21 +1833,24 @@
 	await test(async function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("svg", [m("g")]))
+		nextFrame()
 		var g = root.childNodes[0].childNodes[0]
-		return g.nodeName === "G" &&
+		return g.nodeName.toUpperCase() === "G" &&
 			g.namespaceURI === "http://www.w3.org/2000/svg"
 	})
 
 	await test(async function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("svg", [m("a[href='http://google.com']")]))
-		return root.childNodes[0].childNodes[0].nodeName === "A"
+		nextFrame()
+		return root.childNodes[0].childNodes[0].nodeName.toUpperCase() === "A"
 	})
 
 	await test(async function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("div.classname", [m("a", {href: "/first"})]))
 		m.render(root, m("div", [m("a", {href: "/second"})]))
+		nextFrame()
 		return root.childNodes[0].childNodes.length === 1
 	})
 
@@ -1839,6 +1858,7 @@
 		var root = mock.document.createElement("div")
 		m.render(root, m("ul", [m("li")]))
 		m.render(root, m("ul", [m("li"), undefined]))
+		nextFrame()
 		return root.childNodes[0].childNodes[1].nodeValue === ""
 	})
 
@@ -1846,6 +1866,7 @@
 		var root = mock.document.createElement("div")
 		m.render(root, m("ul", [m("li"), m("li")]))
 		m.render(root, m("ul", [m("li"), undefined]))
+		nextFrame()
 		return root.childNodes[0].childNodes[1].nodeValue === ""
 	})
 
@@ -1853,6 +1874,7 @@
 		var root = mock.document.createElement("div")
 		m.render(root, m("ul", [m("li")]))
 		m.render(root, m("ul", [undefined]))
+		nextFrame()
 		return root.childNodes[0].childNodes[0].nodeValue === ""
 	})
 
@@ -1860,6 +1882,7 @@
 		var root = mock.document.createElement("div")
 		m.render(root, m("ul", [m("li")]))
 		m.render(root, m("ul", [{}]))
+		nextFrame()
 		return root.childNodes[0].childNodes.length === 0
 	})
 
@@ -1867,6 +1890,7 @@
 		var root = mock.document.createElement("div")
 		m.render(root, m("ul", [m("li")]))
 		m.render(root, m("ul", [{tag: "b", attrs: {}}]))
+		nextFrame()
 		return root.childNodes[0].childNodes[0].nodeName === "B"
 	})
 
@@ -1875,6 +1899,7 @@
 		m.render(root, m("ul", [m("li")]))
 		/* eslint-disable no-new-wrappers */
 		m.render(root, m("ul", [{tag: new String("b"), attrs: {}}]))
+		nextFrame()
 		/* eslint-enable no-new-wrappers */
 		return root.childNodes[0].childNodes[0].nodeName === "B"
 	})
@@ -1941,6 +1966,10 @@
 		return root.childNodes[0].childNodes[1].id === "baz"
 	})
 
+	// skipped: root length is 3, cannot render to document in real DOM:
+	// <!DOCTYPE html>
+	// comment
+	// html
 	await test(async function () {
 		// https://github.com/lhorie/mithril.js/issues/48
 		var root = mock.document
@@ -1949,7 +1978,7 @@
 		var result = root.childNodes[0].childNodes[0].id === "foo"
 		root.childNodes = [mock.document.createElement("html")]
 		return result
-	})
+	}, false)
 
 	await test(async function () {
 		// https://github.com/lhorie/mithril.js/issues/49
@@ -2169,9 +2198,12 @@
 	await test(async function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("div[style='background:red']"))
-		return root.childNodes[0].style === "background:red"
+		return useRealDom
+			? root.childNodes[0].style.background === "red"
+			: root.childNodes[0].style === "background:red"
 	})
 
+	// skipped: in realDOM, style value never can be undefined
 	await test(async function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", {style: {background: "red"}}))
@@ -2179,7 +2211,7 @@
 		m.render(root, m("div", {}))
 		var valueAfter = root.childNodes[0].style.background
 		return valueBefore === "red" && valueAfter === undefined
-	})
+	}, false)
 
 	await test(async function () {
 		// https://github.com/lhorie/mithril.js/issues/87
@@ -2724,7 +2756,7 @@
 		]))
 
 		await mock.requestAnimationFrame.$resolve()
-		return root.childNodes[0].childNodes.map(function (n) {
+		return map(root.childNodes[0].childNodes, function (n) {
 			return n.childNodes[0].nodeValue
 		}).join("") === "012345"
 	})
@@ -2769,7 +2801,7 @@
 		]))
 
 		await mock.requestAnimationFrame.$resolve()
-		return root.childNodes[0].childNodes.map(function (n) {
+		return map(root.childNodes[0].childNodes, function (n) {
 			return n.childNodes[0].nodeValue
 		}).join("") === "01245"
 	})
@@ -2806,7 +2838,7 @@
 		]))
 
 		await mock.requestAnimationFrame.$resolve()
-		return root.childNodes[0].childNodes.map(function (n) {
+		return map(root.childNodes[0].childNodes, function (n) {
 			return n.childNodes[0].nodeValue
 		}).join(",") === "12,13,14,15,16,17"
 	})
@@ -2924,8 +2956,8 @@
 		]))
 
 		await mock.requestAnimationFrame.$resolve()
-		return root.childNodes[0].childNodes.map(function (c) {
-			return c.childNodes ? c.childNodes[0].nodeValue : c.nodeValue
+		return map(root.childNodes[0].childNodes, function (c) {
+			return c.childNodes && c.childNodes.length ? c.childNodes[0].nodeValue : c.nodeValue
 		}).slice(0, 5).join("") === "12345"
 	})
 
@@ -2951,8 +2983,8 @@
 		]))
 
 		await mock.requestAnimationFrame.$resolve()
-		return root.childNodes[0].childNodes.map(function (c) {
-			return c.childNodes ? c.childNodes[0].nodeValue : c.nodeValue
+		return map(root.childNodes[0].childNodes, function (c) {
+			return c.childNodes && c.childNodes.length ? c.childNodes[0].nodeValue : c.nodeValue
 		}).join("") === "13456"
 	})
 
@@ -2985,7 +3017,7 @@
 		])
 
 		await mock.requestAnimationFrame.$resolve()
-		return root.childNodes.map(function (node) {
+		return map(root.childNodes, function (node) {
 			return node.id
 		}).join() === "div-1,div-3,div-2"
 	})
@@ -3165,7 +3197,8 @@
 		var vdom = m("div.a", {class: undefined})
 		m.render(root, vdom)
 		await mock.requestAnimationFrame.$resolve()
-		return root.childNodes[0].class === "a"
+		const node = root.childNodes[0]
+		return (node.class||node.className) === "a"
 	})
 
 	await test(async function () {
@@ -5224,9 +5257,9 @@
 	// m.request over jsonp
 	await test(async function (){
 		// script tags cannot be appended directly on the document
-if(!document.body){		var body = mock.document.createElement("body")
+if(!useRealDom){		var body = mock.document.createElement("body")
 		mock.document.body = body
-		document.querySelector('html').appendChild(body)
+		mock.document.appendChild(body)
 }
 		var	error = m.prop("no error")
 		var data
@@ -5240,16 +5273,16 @@ if(!document.body){		var body = mock.document.createElement("body")
 			return script.src.indexOf(callbackKey) > -1
 		}).pop()
 		mock[callbackKey]({foo: "bar"})
-		if(mock!=window) mock.document.removeChild(body)
+		if(!useRealDom) mock.document.removeChild(body)
 		return scriptTag.src.indexOf("/test?callback=mithril_callback") > -1 &&
 			data.foo === "bar"
 	})
 
 	await test(async function (){
 		// script tags cannot be appended directly on the document
-if(!document.body){		var body = mock.document.createElement("body")
+if(!useRealDom){		var body = mock.document.createElement("body")
 		mock.document.body = body
-		document.querySelector('html').appendChild(body)
+		mock.document.appendChild(body)
 }
 		var	error = m.prop("no error")
 		var data
@@ -5269,7 +5302,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 		}).pop()
 
 		mock[callbackKey]({foo: "bar1"})
-		if(mock!=window) mock.document.removeChild(body)
+		if(!useRealDom) mock.document.removeChild(body)
 
 		var url = "/test?jsonpCallback=mithril_callback"
 		return scriptTag.src.indexOf(url) > -1 &&
@@ -5277,9 +5310,9 @@ if(!document.body){		var body = mock.document.createElement("body")
 	})
 
 	await test(async function (){
-if(!document.body){		var body = mock.document.createElement("body")
+if(!useRealDom){		var body = mock.document.createElement("body")
 		mock.document.body = body
-		document.querySelector('html').appendChild(body)
+		mock.document.appendChild(body)
 }
 		var req = m.request({url: "/test", dataType: "jsonp"})
 		var callbackKey = Object.keys(mock).filter(function (globalKey){
@@ -5291,14 +5324,14 @@ if(!document.body){		var body = mock.document.createElement("body")
 		}).pop()
 		mock[callbackKey]({foo: "bar1"})
 		var out = {foo: "bar1"}
-		if(mock!=window) mock.document.removeChild(body)
+		if(!useRealDom) mock.document.removeChild(body)
 		return JSON.stringify(out) === JSON.stringify(req())
 	})
 
 	await test(async function (){
-if(!document.body){		var body = mock.document.createElement("body")
+if(!useRealDom){		var body = mock.document.createElement("body")
 		mock.document.body = body
-		document.querySelector('html').appendChild(body)
+		mock.document.appendChild(body)
 }
 		m.request({url: "/test", dataType: "jsonp", data: {foo: "bar"}})
 		var callbackKey = Object.keys(mock).filter(function (globalKey){
@@ -5313,9 +5346,9 @@ if(!document.body){		var body = mock.document.createElement("body")
 	})
 
 	await test(async function (){
-if(!document.body){		var body = mock.document.createElement("body")
+if(!useRealDom){		var body = mock.document.createElement("body")
 		mock.document.body = body
-		document.querySelector('html').appendChild(body)
+		mock.document.appendChild(body)
 }
 		m.request({
 			url: "/test",
@@ -5331,7 +5364,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 			return script.src.indexOf(callbackKey) > -1
 		}).pop()
 		mock[callbackKey]({foo: "bar"})
-		if(mock!=window) mock.document.removeChild(body)
+		if(!useRealDom) mock.document.removeChild(body)
 		return scriptTag.src.match(/foo=bar/g).length === 1
 	})
 

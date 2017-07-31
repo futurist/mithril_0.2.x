@@ -12,9 +12,14 @@
 	}
 
 	global.test = test
-	async function test(condition) {
+	async function test(condition, arg) {
 		test.total++
 		console.log(test.total)
+		if(arg===false || test.total < startIndex) return
+		if(useRealDom 
+			&& /m\.request|m\.route|contenteditable/.test(
+				condition.toString())) return
+		// if(!name) return
 		try {
 			if (!await condition()) throw new Error("failed")
 		} catch (e) {
@@ -23,6 +28,7 @@
 			test.failures.push(condition)
 		}
 	}
+	var startIndex = 0
 	test.total = 0
 	test.failures = []
 	test.print = function (print) {
