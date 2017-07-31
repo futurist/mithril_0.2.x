@@ -377,10 +377,9 @@ function isDifferentEnough (data, cached, dataAttrKeys) {
 
   if (dataAttrKeys.sort().join() !==
 				Object.keys(cached.attrs).sort().join()) {
+  
+    return true
 
-  // if (attrName === 'config' || attrName === 'key' || isLifecycleMethod(attrName)){
-  //   return true
-  // }
     // try to patch diff node
 
     var node = cached.nodes[0]
@@ -2453,7 +2452,7 @@ function handleJsonp (options) {
   var script = $document.createElement('script')
 
   global[callbackKey] = function (resp) {
-    script.parentNode.removeChild(script)
+    script.parentNode && script.parentNode.removeChild(script)
     options.onload({
       type: 'load',
       target: {
@@ -2464,7 +2463,7 @@ function handleJsonp (options) {
   }
 
   script.onerror = function () {
-    script.parentNode.removeChild(script)
+    script.parentNode && script.parentNode.removeChild(script)
 
     options.onerror({
       type: 'error',

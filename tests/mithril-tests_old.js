@@ -1,162 +1,126 @@
 /* global m, test, mock */
-(async function () { // eslint-disable-line max-statements
+(function () { // eslint-disable-line max-statements
 	"use strict"
 
-	// m.deps(mock.window)
-	var mock = window
-	function onload(){
-		return new Promise(s=>
-			window.onload = s
-		)
-	}
-	await onload()
-	console.log('onloaded', document.body, mock!=window)
-	window.requestAnimationFrame.$resolve = function(){
-		return new Promise((s)=>setTimeout(s, 1000000))
-	}
-	// window.addEventListener('unhandledrejection', event => {
-	// 		// Prevent error output on the console:
-	// 		event.preventDefault()
-	// 		console.log('Reason: ' + event.reason)
-	// })
-	window.XMLHttpRequest = (function () {
-		function XMLHttpRequest() {
-			this.$headers = {}
-			this.setRequestHeader = function (key, value) {
-				this.$headers[key] = value
-			}
-			this.open = function (method, url) {
-				this.method = method
-				this.url = url
-			}
-			this.send = function () {
-				this.responseText = JSON.stringify(this)
-				this.readyState = 4
-				this.status = 200
-				XMLHttpRequest.$instances.push(this)
-			}
-		}
-		XMLHttpRequest.$instances = []
-		return XMLHttpRequest
-	})()
+	m.deps(mock.window)
 
 	// m
-	await test(async function () { return typeof m.version() === "string" })
-	await test(async function () { return m("div").tag === "div" })
-	await test(async function () { return m(".foo").tag === "div" })
-	await test(async function () { return m(".foo").attrs.className === "foo" })
-	await test(async function () { return m("[class=a]").attrs.className === "a" })
-	await test(async function () { return m("[title=bar]").tag === "div" })
-	await test(async function () { return m("[title=bar]").attrs.title === "bar" })
-	await test(async function () { return m("[empty]").attrs.empty === true })
-	await test(async function () { return m("[title=\'bar\']").attrs.title === "bar" })
-	await test(async function () { return m("[title=\"bar\"]").attrs.title === "bar" })
-	await test(async function () { return m("div", "test").children[0] === "test" })
+	test(function () { return typeof m.version() === "string" })
+	test(function () { return m("div").tag === "div" })
+	test(function () { return m(".foo").tag === "div" })
+	test(function () { return m(".foo").attrs.className === "foo" })
+	test(function () { return m("[class=a]").attrs.className === "a" })
+	test(function () { return m("[title=bar]").tag === "div" })
+	test(function () { return m("[title=bar]").attrs.title === "bar" })
+	test(function () { return m("[empty]").attrs.empty === true })
+	test(function () { return m("[title=\'bar\']").attrs.title === "bar" })
+	test(function () { return m("[title=\"bar\"]").attrs.title === "bar" })
+	test(function () { return m("div", "test").children[0] === "test" })
 
-	await test(async function () {
+	test(function () {
 		return m("div", "test", "test2").children[1] === "test2"
 	})
 
-	await test(async function () { return m("div", ["test"]).children[0] === "test" })
+	test(function () { return m("div", ["test"]).children[0] === "test" })
 
-	await test(async function () {
+	test(function () {
 		return m("div", {title: "bar"}, "test").attrs.title === "bar"
 	})
 
-	await test(async function () {
+	test(function () {
 		return m("div", {title: "bar"}, "test").children[0] === "test"
 	})
 
-	await test(async function () {
+	test(function () {
 		return m("div", {title: "bar"}, ["test"]).children[0] === "test"
 	})
 
-	await test(async function () {
+	test(function () {
 		return m("div", {title: "bar"}, m("div")).children[0].tag === "div"
 	})
 
-	await test(async function () {
+	test(function () {
 		return m("div", {title: "bar"}, [m("div")]).children[0].tag === "div"
 	})
 
 	// splat
-	await test(async function () {
+	test(function () {
 		var node = m("div", {title: "bar"}, "test0", "test1", "test2", "test3")
 		return node.children[3] === "test3"
 	})
 
-	await test(async function () {
+	test(function () {
 		var node = m("div", {title: "bar"}, m("div"), m("i"), m("span"))
 		return node.children[2].tag === "span"
 	})
 
-	await test(async function () { return m("div", ["a", "b"]).children.length === 2 })
-	await test(async function () { return m("div", [m("div")]).children[0].tag === "div" })
+	test(function () { return m("div", ["a", "b"]).children.length === 2 })
+	test(function () { return m("div", [m("div")]).children[0].tag === "div" })
 
 	// yes, this is expected behavior: see method signature
-	await test(async function () { return m("div", m("div")).children[0].tag === "div" })
+	test(function () { return m("div", m("div")).children[0].tag === "div" })
 
-	await test(async function () { return m("div", [undefined]).tag === "div" })
+	test(function () { return m("div", [undefined]).tag === "div" })
 
 	// as long as it doesn't throw errors, it's fine
-	await test(async function () { return m("div", [{foo: "bar"}]) })
+	test(function () { return m("div", [{foo: "bar"}]) })
 
-	await test(async function () { return m("svg", [m("g")]) })
-	await test(async function () { return m("svg", [m("a[href='http://google.com']")]) })
+	test(function () { return m("svg", [m("g")]) })
+	test(function () { return m("svg", [m("a[href='http://google.com']")]) })
 
-	await test(async function () {
+	test(function () {
 		return m(".foo", {class: "bar"}).attrs.class === "foo bar"
 	})
 
-	await test(async function () {
+	test(function () {
 		return m(".foo", {className: "bar"}).attrs.className === "foo bar"
 	})
 
-	await test(async function () {
+	test(function () {
 		return m(".foo", {className: ""}).attrs.className === "foo"
 	})
 
 	// https://github.com/lhorie/mithril.js/issues/382 and 512
-	await test(async function () {
+	test(function () {
 		return m("div", {className: ""}).attrs.className === ""
 	})
 
-	await test(async function () {
+	test(function () {
 		return m("div", {class: ""}).attrs.className === undefined
 	})
 
-	await test(async function () {
+	test(function () {
 		return m("div", {className: ""}).attrs.class === undefined
 	})
 
-	await test(async function () { return m("div", {class: ""}).attrs.class === "" })
-	await test(async function () { return m("div", [1, 2, 3], 4).children.length === 2 })
-	await test(async function () { return m("div", [1, 2, 3], 4).children[0].length === 3 })
-	await test(async function () { return m("div", [1, 2, 3], 4).children[1] === 4 })
-	await test(async function () { return m("div", [1, 2, 3]).children.length === 3 })
+	test(function () { return m("div", {class: ""}).attrs.class === "" })
+	test(function () { return m("div", [1, 2, 3], 4).children.length === 2 })
+	test(function () { return m("div", [1, 2, 3], 4).children[0].length === 3 })
+	test(function () { return m("div", [1, 2, 3], 4).children[1] === 4 })
+	test(function () { return m("div", [1, 2, 3]).children.length === 3 })
 
-	await test(async function () {
+	test(function () {
 		return m("div", [1, 2, 3], [4, 5, 6, 7]).children.length === 2
 	})
 
-	await test(async function () {
+	test(function () {
 		return m("div", [1, 2, 3], [4, 5, 6, 7]).children[0].length === 3
 	})
 
-	await test(async function () {
+	test(function () {
 		return m("div", [1, 2, 3], [4, 5, 6, 7]).children[1].length === 4
 	})
 
-	await test(async function () { return m("div", [1], [2], [3]).children.length === 3 })
+	test(function () { return m("div", [1], [2], [3]).children.length === 3 })
 
-	await test(async function () {
+	test(function () {
 		// class changes shouldn't trigger dom recreation
 		var v1 = m(".foo", {class: "", onclick: function () {}})
 		var v2 = m(".foo", {class: "bar", onclick: function () {}})
 		return Object.keys(v1.attrs).join() === Object.keys(v2.attrs).join()
 	})
 
-	await test(async function () {
+	test(function () {
 		// m should proxy object first arg to m.component
 		var component = {
 			controller: function (args) {
@@ -174,7 +138,7 @@
 	})
 
 	// m.mount
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		var whatever = 1
 		var app = {
@@ -187,21 +151,21 @@
 			}
 		}
 		m.mount(root, app)
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		whatever++
 		m.redraw()
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		whatever++
 		m.redraw()
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return root.childNodes.length
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve()
+	test(function () {
+		mock.requestAnimationFrame.$resolve()
 
 		var root1 = mock.document.createElement("div")
 		var mod1 = m.mount(root1, {
@@ -215,7 +179,7 @@
 			view: function (ctrl) { return ctrl.value }
 		})
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return (root1.childNodes[0].nodeValue === "test1" &&
 				root2.childNodes[0].nodeValue === "test2") &&
@@ -223,8 +187,8 @@
 			(mod2.value && mod2.value === "test2")
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve()
+	test(function () {
+		mock.requestAnimationFrame.$resolve()
 
 		var root = mock.document.createElement("div")
 		var unloaded = false
@@ -239,18 +203,18 @@
 			view: function (ctrl) { return ctrl.value }
 		})
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.mount(root, null)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return unloaded
 	})
 
-	await test(async function () {
+	test(function () {
 		// component should pass args to both controller and view
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var root = mock.document.createElement("div")
 		var slot1, slot2
@@ -260,14 +224,14 @@
 		}
 		m.mount(root, m.component(component, {a: 1}))
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return slot1 === 1 && slot2 === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		// component should work without controller
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var root = mock.document.createElement("div")
 		var slot2
@@ -276,14 +240,14 @@
 		}
 		m.mount(root, m.component(component, {a: 1}))
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return slot2 === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		// component controller should only run once
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var root = mock.document.createElement("div")
 		var count1 = 0
@@ -307,18 +271,18 @@
 
 		m.mount(root, component)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.redraw(true)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return count1 === 1 && count2 === 2
 	})
 
-	await test(async function () {
+	test(function () {
 		// sub component controller should only run once
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var root = mock.document.createElement("div")
 		var count1 = 0
@@ -354,18 +318,18 @@
 
 		m.mount(root, component)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.redraw(true)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return count1 === 1 && count2 === 2 && count3 === 1 && count4 === 2
 	})
 
-	await test(async function () {
+	test(function () {
 		// keys in components should work
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var root = mock.document.createElement("div")
 		var list = [1, 2, 3]
@@ -390,20 +354,20 @@
 
 		var firstBefore = root.childNodes[0]
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		list.reverse()
 		m.redraw(true)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var firstAfter = root.childNodes[2]
 
 		return firstBefore === firstAfter
 	})
-	await test(async function () {
+	test(function () {
 		//string keys in components should work
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var root = mock.document.createElement("div")
 		var list = [1, 2, 3]
@@ -425,20 +389,20 @@
 
 		var firstBefore = root.childNodes[0]
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		list.reverse()
 		m.redraw(true)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var firstAfter = root.childNodes[2]
 
 		return firstBefore === firstAfter
 	})
-	await test(async function () {
+	test(function () {
 		//keys in subcomponents should work
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var root = mock.document.createElement("div")
 		var list = [1, 2, 3]
@@ -469,22 +433,22 @@
 
 		var firstBefore = root.childNodes[0]
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		list.reverse()
 		m.redraw(true)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var firstAfter = root.childNodes[2]
 
 		return firstBefore === firstAfter
 	})
 
-	await test(async function () {
+	test(function () {
 		// keys in components should work even if component internally messes
 		// them up
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var root = mock.document.createElement("div")
 		var list = [1, 2, 3]
@@ -509,22 +473,22 @@
 
 		var firstBefore = root.childNodes[0]
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		list.reverse()
 		m.redraw(true)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var firstAfter = root.childNodes[2]
 
 		return firstBefore === firstAfter
 	})
 
-	await test(async function () {
+	test(function () {
 		// keys in subcomponents should work even if component internally messes
 		// them up
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var root = mock.document.createElement("div")
 		var list = [1, 2, 3]
@@ -556,22 +520,22 @@
 
 		var firstBefore = root.childNodes[0]
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		list.reverse()
 		m.redraw(true)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var firstAfter = root.childNodes[2]
 
 		return firstBefore === firstAfter
 	})
 
-	await test(async function () {
+	test(function () {
 		// component identity should stay intact if components are descendants
 		// of keyed elements
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var root = mock.document.createElement("div")
 		var list = [1, 2, 3]
@@ -596,22 +560,22 @@
 
 		var firstBefore = root.childNodes[0].childNodes[0]
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		list.reverse()
 		m.redraw(true)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var firstAfter = root.childNodes[2].childNodes[0]
 
 		return firstBefore === firstAfter
 	})
 
-	await test(async function () {
+	test(function () {
 		// subcomponent identity should stay intact if components are
 		// descendants of keyed elements
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var root = mock.document.createElement("div")
 		var list = [1, 2, 3]
@@ -643,21 +607,21 @@
 
 		var firstBefore = root.childNodes[0].childNodes[0]
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		list.reverse()
 		m.redraw(true)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var firstAfter = root.childNodes[2].childNodes[0]
 
 		return firstBefore === firstAfter
 	})
 
-	await test(async function () {
+	test(function () {
 		// component should call onunload when removed from template
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var root = mock.document.createElement("div")
 		var list = [1, 2, 3]
@@ -685,19 +649,19 @@
 
 		m.mount(root, component)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		list.pop()
 		m.redraw(true)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return unloaded === 3
 	})
 
-	await test(async function () {
+	test(function () {
 		// subcomponent should call onunload when removed from template
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var root = mock.document.createElement("div")
 		var list = [1, 2, 3]
@@ -736,20 +700,20 @@
 
 		m.mount(root, component)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		list.pop()
 		m.redraw(true)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return unloaded1 === 3 && unloaded2 === 3
 	})
 
-	await test(async function () {
+	test(function () {
 		// calling m.redraw synchronously from controller constructor should not
 		// trigger extra redraws
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var root = mock.document.createElement("div")
 		var count = 0
@@ -773,15 +737,15 @@
 
 		m.mount(root, component)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return count === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		// calling m.redraw synchronously from controller constructor should not
 		// trigger extra redraws
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var root = mock.document.createElement("div")
 		var count = 0
@@ -812,15 +776,15 @@
 
 		m.mount(root, component)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return count === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		// calling preventDefault from component's onunload should prevent route
 		// change
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -853,20 +817,20 @@
 			}
 		})
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/b")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		testEnabled = false
 
 		return loaded === false
 	})
 
-	await test(async function () {
+	test(function () {
 		// calling preventDefault from subcomponent's onunload should prevent
 		// route change
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -906,20 +870,20 @@
 			}
 		})
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/b")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		testEnabled = false
 
 		return loaded === false
 	})
 
-	await test(async function () {
+	test(function () {
 		// calling preventDefault from non-curried component's onunload should
 		// prevent route change
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -952,20 +916,20 @@
 			}
 		})
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/b")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		testEnabled = false
 
 		return loaded === false
 	})
 
-	await test(async function () {
+	test(function () {
 		// calling preventDefault from non-curried subcomponent's onunload
 		// should prevent route change
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -1005,19 +969,19 @@
 			}
 		})
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/b")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		testEnabled = false
 
 		return loaded === false
 	})
 
-	await test(async function () {
+	test(function () {
 		// nested components under keyed components should render
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var root = mock.document.createElement("div")
 		var count = 0
@@ -1052,14 +1016,14 @@
 
 		m.mount(root, App)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return count === 3
 	})
 
-	await test(async function () {
+	test(function () {
 		// a route change should initialize a component's controller
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -1090,20 +1054,20 @@
 			}
 		})
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/b")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/a")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return countA === 2 && countB === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		var component = {}
 		var unloaded = false
@@ -1117,8 +1081,8 @@
 		return unloaded === true
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve()
+	test(function () {
+		mock.requestAnimationFrame.$resolve()
 
 		var root = mock.document.createElement("div")
 		var initCount = 0
@@ -1132,16 +1096,16 @@
 		}
 		m.mount(root, component)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.redraw()
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return initCount === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 
 		var dom = mock.document.createElement("div")
@@ -1169,22 +1133,22 @@
 
 		m.mount(root, component)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		show = false
 		m.redraw()
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		show = true
 		m.redraw()
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return root.childNodes.length === 3
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		var show = true
 		var testcomponent = {
@@ -1207,24 +1171,24 @@
 
 		m.mount(root, app)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		show = false
 		m.redraw()
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		show = true
 		m.redraw()
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return root.childNodes.length === 2
 	})
 
-	await test(async function () {
+	test(function () {
 		// Components should not require a view
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var Component = {
@@ -1243,12 +1207,12 @@
 			}
 		})
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return root.childNodes[0].nodeName === "DIV"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/551
 		var root = mock.document.createElement("div")
 		var a = false
@@ -1284,17 +1248,15 @@
 
 		m.mount(root, Root)
 
-		await mock.requestAnimationFrame.$resolve()
-		
 		var target = root.childNodes[0].childNodes[0]
 		target.onclick({currentTarget: target})
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return !unloaded && found.id === "a" && redraws === 3
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/551
 		var root = mock.document.createElement("div")
 		var a = false
@@ -1331,16 +1293,15 @@
 
 		m.mount(root, Root)
 
-		await mock.requestAnimationFrame.$resolve()
 		var target = root.childNodes[0].childNodes[0]
 		target.onclick({currentTarget: target})
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return !unloaded && found.id === "a" && redraws === 2
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		var redraws = 0
 		var Root = {
@@ -1352,16 +1313,15 @@
 
 		m.mount(root, Root)
 
-		await mock.requestAnimationFrame.$resolve()
 		var target = root.childNodes[0]
 		target.onclick({currentTarget: target})
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return redraws === 3
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/555
 		var root = mock.document.createElement("div")
 
@@ -1399,17 +1359,17 @@
 			"/bar": BarPage
 		})
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/bar")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var parent = root.childNodes[0].childNodes[2].childNodes[0]
 		return parent.nodeValue === "Bob"
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		var redraws = 0
 		var data
@@ -1433,18 +1393,18 @@
 
 		m.mount(root, Root)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		mock.XMLHttpRequest.$instances.pop().onreadystatechange()
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.mount(root, null)
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return redraws === 1 && data.url === "/foo"
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve()
+	test(function () {
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -1479,20 +1439,20 @@
 
 		m.mount(root, Root)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		mock.XMLHttpRequest.$instances.pop().onreadystatechange()
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		mock.XMLHttpRequest.$instances.pop().onreadystatechange()
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.mount(root, null)
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return redraws1 === 1 && redraws2 === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		var redraws1 = 0
 		var redraws2 = 0
@@ -1534,22 +1494,22 @@
 			"/root2": Root2
 		})
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		mock.XMLHttpRequest.$instances.pop().onreadystatechange()
 
 		m.route("/root2")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		mock.XMLHttpRequest.$instances.pop().onreadystatechange()
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.mount(root, null)
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return redraws1 === 1 && redraws2 === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 
 		var cond = true
@@ -1578,17 +1538,17 @@
 
 		m.mount(root, Root)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		cond = false
 		m.redraw(true)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return controller1 !== controller2
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 
 		var cond = true
@@ -1618,17 +1578,17 @@
 
 		m.mount(root, Root)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		cond = false
 		m.redraw(true)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return unloaded
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 
 		var cond = true
@@ -1656,17 +1616,17 @@
 
 		m.mount(root, Root)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		cond = false
 		m.redraw(true)
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return initialized === false
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		var el
 
@@ -1693,15 +1653,13 @@
 
 		m.mount(root, FooPage)
 
-		await mock.requestAnimationFrame.$resolve()
-		
 		root.childNodes[0].childNodes[0].onclick({})
 
 		return el.id === "bar"
 	})
 
 	// m.withAttr
-	await test(async function () {
+	test(function () {
 		// the handler is called with the correct value & context when
 		// callbackThis not given
 		var _this = {}
@@ -1717,7 +1675,7 @@
 		return value === "foo" && context === _this
 	})
 
-	await test(async function () {
+	test(function () {
 		// the handler is called with the correct value & context when
 		// callbackThis is given
 		var _this = {}
@@ -1733,16 +1691,16 @@
 	})
 
 	// m.trust
-	await test(async function () { return m.trust("test").valueOf() === "test" })
+	test(function () { return m.trust("test").valueOf() === "test" })
 
 	// m.render
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, "test")
 		return root.childNodes[0].nodeValue === "test"
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", {class: "a"}))
 		var elementBefore = root.childNodes[0]
@@ -1751,7 +1709,7 @@
 		return elementBefore === elementAfter
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m(".a"))
 		var elementBefore = root.childNodes[0]
@@ -1760,7 +1718,7 @@
 		return elementBefore === elementAfter
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", {id: "a"}))
 		var elementBefore = root.childNodes[0]
@@ -1769,7 +1727,7 @@
 		return elementBefore !== elementAfter
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("#a"))
 		var elementBefore = root.childNodes[0]
@@ -1778,7 +1736,7 @@
 		return elementBefore !== elementAfter
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("#a"))
 		var elementBefore = root.childNodes[0]
@@ -1787,31 +1745,31 @@
 		return elementBefore !== elementAfter
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", [undefined]))
 		return root.childNodes[0].childNodes[0].nodeValue === ""
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", [null]))
 		return root.childNodes[0].childNodes[0].nodeValue === ""
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", [true]))
 		return root.childNodes[0].childNodes[0].nodeValue === ""
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", [false]))
 		return root.childNodes[0].childNodes[0].nodeValue === ""
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("svg", [m("g")]))
 		var g = root.childNodes[0].childNodes[0]
@@ -1819,55 +1777,55 @@
 			g.namespaceURI === "http://www.w3.org/2000/svg"
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("svg", [m("a[href='http://google.com']")]))
 		return root.childNodes[0].childNodes[0].nodeName === "A"
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("div.classname", [m("a", {href: "/first"})]))
 		m.render(root, m("div", [m("a", {href: "/second"})]))
 		return root.childNodes[0].childNodes.length === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("ul", [m("li")]))
 		m.render(root, m("ul", [m("li"), undefined]))
 		return root.childNodes[0].childNodes[1].nodeValue === ""
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("ul", [m("li"), m("li")]))
 		m.render(root, m("ul", [m("li"), undefined]))
 		return root.childNodes[0].childNodes[1].nodeValue === ""
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("ul", [m("li")]))
 		m.render(root, m("ul", [undefined]))
 		return root.childNodes[0].childNodes[0].nodeValue === ""
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("ul", [m("li")]))
 		m.render(root, m("ul", [{}]))
 		return root.childNodes[0].childNodes.length === 0
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("ul", [m("li")]))
 		m.render(root, m("ul", [{tag: "b", attrs: {}}]))
 		return root.childNodes[0].childNodes[0].nodeName === "B"
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("ul", [m("li")]))
 		/* eslint-disable no-new-wrappers */
@@ -1876,123 +1834,110 @@
 		return root.childNodes[0].childNodes[0].nodeName === "B"
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("ul", [m("li", [m("a")])]))
 		m.render(root, m("ul", [{subtree: "retain"}]))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes[0].childNodes[0].nodeName === "A"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/43
 		var root = mock.document.createElement("div")
 		m.render(root, m("a", {config: m.route}, "test"))
 		m.render(root, m("a", {config: m.route}, "test"))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes[0].nodeValue === "test"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/44 (1)
 		var root = mock.document.createElement("div")
 		m.render(root, m("#foo", [null, m("#bar")]))
 		m.render(root, m("#foo", ["test", m("#bar")]))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes[0].nodeValue === "test"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/44 (2)
 		var root = mock.document.createElement("div")
 		m.render(root, m("#foo", [null, m("#bar")]))
 		m.render(root, m("#foo", [m("div"), m("#bar")]))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes[0].nodeName === "DIV"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/44 (3)
 		var root = mock.document.createElement("div")
 		m.render(root, m("#foo", ["test", m("#bar")]))
 		m.render(root, m("#foo", [m("div"), m("#bar")]))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes[0].nodeName === "DIV"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/44 (4)
 		var root = mock.document.createElement("div")
 		m.render(root, m("#foo", [m("div"), m("#bar")]))
 		m.render(root, m("#foo", ["test", m("#bar")]))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes[0].nodeValue === "test"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/44 (5)
 		var root = mock.document.createElement("div")
 		m.render(root, m("#foo", [m("#bar")]))
 		m.render(root, m("#foo", [m("#bar"), [m("#baz")]]))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes[1].id === "baz"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/48
 		var root = mock.document
 		m.render(root, m("html", [m("#foo")]))
-		await mock.requestAnimationFrame.$resolve()
 		var result = root.childNodes[0].childNodes[0].id === "foo"
 		root.childNodes = [mock.document.createElement("html")]
 		return result
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/49
 		var root = mock.document.createElement("div")
 		m.render(root, m("a", "test"))
 		m.render(root, m("a.foo", "test"))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes[0].nodeValue === "test"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/49
 		var root = mock.document.createElement("div")
 		m.render(root, m("a.foo", "test"))
 		m.render(root, m("a", "test"))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes[0].nodeValue === "test"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/49
 		var root = mock.document.createElement("div")
 		m.render(root, m("a.foo", "test"))
 		m.render(root, m("a", "test1"))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes[0].nodeValue === "test1"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/49
 		var root = mock.document.createElement("div")
 		m.render(root, m("a", "test"))
 		m.render(root, m("a", "test1"))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes[0].nodeValue === "test1"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/50
 		var root = mock.document.createElement("div")
 		m.render(root, m("#foo", [[m("div", "a"), m("div", "b")], m("#bar")]))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes[1].childNodes[0].nodeValue === "b"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/50
 		var root = mock.document.createElement("div")
 
@@ -2006,11 +1951,10 @@
 			m("#bar")
 		]))
 
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes[2].childNodes[0].nodeValue === "c"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/50
 		var root = mock.document.createElement("div")
 
@@ -2020,33 +1964,30 @@
 			m("#bar")
 		]))
 
-		await mock.requestAnimationFrame.$resolve()
 		var parent = root.childNodes[0]
 		return parent.childNodes[3].childNodes[0].nodeValue === "d" &&
 			parent.childNodes[4].id === "bar"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/50
 		var root = mock.document.createElement("div")
 		m.render(root, m("#foo", [[m("div", "a"), m("div", "b")], "test"]))
-		await mock.requestAnimationFrame.$resolve()
 		var parent = root.childNodes[0]
 		return parent.childNodes[1].childNodes[0].nodeValue === "b" &&
 			parent.childNodes[2].nodeValue === "test"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/50
 		var root = mock.document.createElement("div")
 		m.render(root, m("#foo", [["a", "b"], "test"]))
-		await mock.requestAnimationFrame.$resolve()
 		var parent = root.childNodes[0]
 		return parent.childNodes[1].nodeValue === "b" &&
 			parent.childNodes[2].nodeValue === "test"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/51
 		var root = mock.document.createElement("div")
 
@@ -2059,13 +2000,12 @@
 			m("button"),
 			m("article", [m("span"), m("nav")])
 		]))
-		await mock.requestAnimationFrame.$resolve()
 
 		var node = root.childNodes[0].childNodes[1].childNodes[0]
 		return node.nodeName === "SPAN"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/51
 		var root = mock.document.createElement("div")
 
@@ -2078,13 +2018,12 @@
 			m("button"),
 			m("article", ["test", m("nav")])
 		]))
-		await mock.requestAnimationFrame.$resolve()
 
 		var node = root.childNodes[0].childNodes[1].childNodes[0]
 		return node.nodeValue === "test"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/51
 		var root = mock.document.createElement("div")
 
@@ -2097,42 +2036,37 @@
 			m("button"),
 			m("article", [m.trust("test"), m("nav")])
 		]))
-		await mock.requestAnimationFrame.$resolve()
 
 		var node = root.childNodes[0].childNodes[1].childNodes[0]
 		return node.nodeValue === "test"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/55
 		var root = mock.document.createElement("div")
 		m.render(root, m("#a"))
-		await mock.requestAnimationFrame.$resolve()
 		var elementBefore = root.childNodes[0]
 		m.render(root, m("#b"))
-		await mock.requestAnimationFrame.$resolve()
 		var elementAfter = root.childNodes[0]
 		return elementBefore !== elementAfter
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/56
 		var root = mock.document.createElement("div")
 		m.render(root, [null, "foo"])
 		m.render(root, ["bar"])
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes.length === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/56
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", "foo"))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes.length === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", [m("button"), m("ul")]))
 		var valueBefore = root.childNodes[0].childNodes[0].nodeName
@@ -2141,7 +2075,7 @@
 		return valueBefore === "BUTTON" && valueAfter === ""
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", [m("ul"), undefined]))
 		var valueBefore1 = root.childNodes[0].childNodes[0].nodeName
@@ -2153,7 +2087,7 @@
 			valueBefore2 === "" && valueAfter2 === "UL"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/79
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", {style: {background: "red"}}))
@@ -2163,13 +2097,13 @@
 		return valueBefore === "red" && valueAfter === ""
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("div[style='background:red']"))
 		return root.childNodes[0].style === "background:red"
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", {style: {background: "red"}}))
 		var valueBefore = root.childNodes[0].style.background
@@ -2178,7 +2112,7 @@
 		return valueBefore === "red" && valueAfter === undefined
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/87
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", [[m("a"), m("a")], m("button")]))
@@ -2187,7 +2121,7 @@
 			root.childNodes[0].childNodes[1].nodeName === "BUTTON"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/87
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", [m("a"), m("b"), m("button")]))
@@ -2196,7 +2130,7 @@
 			root.childNodes[0].childNodes[1].nodeName === "BUTTON"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/99
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", [m("img"), m("h1")]))
@@ -2205,7 +2139,7 @@
 			root.childNodes[0].childNodes[0].nodeName === "A"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/120
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", ["a", "b", "c", "d"]))
@@ -2216,7 +2150,7 @@
 			children[1].nodeValue === "e"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/120
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", [["a", "b", "c", "d"]]))
@@ -2227,7 +2161,7 @@
 			children[1].nodeValue === "e"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/120
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", ["x", [["a"], "b", "c", "d"]]))
@@ -2238,7 +2172,7 @@
 			children[1].nodeValue === "e"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/120
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", ["b"]))
@@ -2247,7 +2181,7 @@
 		return children.length === 1 && children[0].nodeValue === "e"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/120
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", ["a", ["b"]]))
@@ -2258,7 +2192,7 @@
 			children[1].nodeValue === "e"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/120
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", ["a", [["b"]]]))
@@ -2269,7 +2203,7 @@
 			children[1].nodeValue === "e"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/120
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", ["a", [["b"], "c"]]))
@@ -2280,7 +2214,7 @@
 			children[1].nodeValue === "e"
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 
 		var success = false
@@ -2296,7 +2230,7 @@
 		return success
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 
 		var index = 0
@@ -2318,7 +2252,7 @@
 		return success
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		var parent
 
@@ -2329,7 +2263,7 @@
 		return parent === root
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		var count = 0
 
@@ -2345,7 +2279,7 @@
 		return count === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/129
 		var root = mock.document.createElement("div")
 
@@ -2357,7 +2291,7 @@
 		return true
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/98
 		// insert at beginning
 		var root = mock.document.createElement("div")
@@ -2384,7 +2318,7 @@
 			root.childNodes.length === 4
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/98
 		var root = mock.document.createElement("div")
 
@@ -2409,7 +2343,7 @@
 			root.childNodes.length === 3
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/98
 		var root = mock.document.createElement("div")
 
@@ -2434,7 +2368,7 @@
 			root.childNodes.length === 3
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/98
 		var root = mock.document.createElement("div")
 
@@ -2468,7 +2402,7 @@
 			root.childNodes.length === 4
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/98
 		var root = mock.document.createElement("div")
 
@@ -2506,7 +2440,7 @@
 			root.childNodes.length === 6
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/149
 		var root = mock.document.createElement("div")
 
@@ -2545,7 +2479,7 @@
 			fifthBefore === fifthAfter
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/246
 		// insert at beginning with non-keyed in the middle
 		var root = mock.document.createElement("div")
@@ -2567,28 +2501,25 @@
 			root.childNodes.length === 3
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/134
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", {contenteditable: true}, "test"))
-		await mock.requestAnimationFrame.$resolve()
 		mock.document.activeElement = root.childNodes[0]
 		m.render(root, m("div", {contenteditable: true}, "test1"))
 		m.render(root, m("div", {contenteditable: false}, "test2"))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes[0].nodeValue === "test2"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/136
 		var root = mock.document.createElement("div")
 		m.render(root, m("textarea", ["test"]))
 		m.render(root, m("textarea", ["test1"]))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].value === "test1"
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		var unloaded = 0
 
@@ -2615,11 +2546,10 @@
 			})
 		])
 
-		await mock.requestAnimationFrame.$resolve()
 		return unloaded === 0
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		var unloadedParent = 0
 		var unloadedChild = 0
@@ -2644,11 +2574,10 @@
 			m("a", {config: configChild})
 		]))
 
-		await mock.requestAnimationFrame.$resolve()
 		return unloadedParent === 1 && unloadedChild === 0
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		var unloadedParent = 0
 		var unloadedChild = 0
@@ -2673,22 +2602,20 @@
 			m("b", {config: configChild})
 		]))
 
-		await mock.requestAnimationFrame.$resolve()
 		return unloadedParent === 1 && unloadedChild === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/150
 		var root = mock.document.createElement("div")
 		m.render(root, [m("a"), m("div")])
 		m.render(root, [[], m("div")])
 
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes.length === 1 &&
 			root.childNodes[0].nodeName === "DIV"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/156
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", [
@@ -2697,11 +2624,10 @@
 			}),
 			m("span")
 		]))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes[8].nodeName === "SPAN"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/157
 		var root = mock.document.createElement("div")
 
@@ -2720,31 +2646,28 @@
 			m("li", {key: 5}, 5)
 		]))
 
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes.map(function (n) {
 			return n.childNodes[0].nodeValue
 		}).join("") === "012345"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/157
 		var root = mock.document.createElement("div")
 		m.render(root, m("input", {value: "a"}))
 		m.render(root, m("input", {value: "aa"}))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes.length === 0
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/157
 		var root = mock.document.createElement("div")
 		m.render(root, m("br", {class: "a"}))
 		m.render(root, m("br", {class: "aa"}))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes.length === 0
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/194
 		var root = mock.document.createElement("div")
 
@@ -2765,13 +2688,12 @@
 			m("li", {key: 5}, 5)
 		]))
 
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes.map(function (n) {
 			return n.childNodes[0].nodeValue
 		}).join("") === "01245"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/194
 		var root = mock.document.createElement("div")
 
@@ -2802,31 +2724,28 @@
 			m("li", {key: 17}, 17)
 		]))
 
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes.map(function (n) {
 			return n.childNodes[0].nodeValue
 		}).join(",") === "12,13,14,15,16,17"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/206
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", undefined))
 		m.render(root, m("div", [m("div")]))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes.length === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/206
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", null))
 		m.render(root, m("div", [m("div")]))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes.length === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/200
 		var root = mock.document.createElement("div")
 
@@ -2841,7 +2760,6 @@
 		m.render(root, [m("div", {config: unloadable1})])
 		m.render(root, [])
 
-		await mock.requestAnimationFrame.$resolve()
 		var unloaded2 = false
 
 		function unloadable2(element, isInit, context) {
@@ -2852,20 +2770,18 @@
 
 		m.render(root, [m("div", {config: unloadable2})])
 		m.render(root, [])
-		await mock.requestAnimationFrame.$resolve()
 
 		return unloaded1 === true && unloaded2 === true
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, [m("div.blue")])
 		m.render(root, [m("div.green", [m("div")]), m("div.blue")])
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes.length === 2
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/277
 		var root = mock.document.createElement("div")
 		function Field() {
@@ -2874,18 +2790,16 @@
 			this.children = "hello"
 		}
 		m.render(root, new Field())
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes.length === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, {foo: 123})
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes.length === 0
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/299
 		var root = mock.document.createElement("div")
 
@@ -2920,13 +2834,12 @@
 			null, null, null, null, null, null, null, null, null, null
 		]))
 
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes.map(function (c) {
 			return c.childNodes ? c.childNodes[0].nodeValue : c.nodeValue
 		}).slice(0, 5).join("") === "12345"
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/377
 		var root = mock.document.createElement("div")
 
@@ -2947,23 +2860,21 @@
 			[m("div", {key: 6}, 6)]
 		]))
 
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes.map(function (c) {
 			return c.childNodes ? c.childNodes[0].nodeValue : c.nodeValue
 		}).join("") === "13456"
 	})
 
-	await test(async function () {
+	test(function () {
 		// don't throw rendering console.log in Firefox
 		var root = mock.document.createElement("div")
 		/* eslint-disable no-console */
 		m.render(root, m("div", [console.log()]))
 		/* eslint-enable no-console */
-		await mock.requestAnimationFrame.$resolve()
 		return true
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 
 		m.render(root, [
@@ -2972,7 +2883,6 @@
 			m("#div-3", {key: 3})
 		])
 
-		await mock.requestAnimationFrame.$resolve()
 		root.appendChild(root.childNodes[1])
 
 		m.render(root, [
@@ -2981,41 +2891,36 @@
 			m("#div-2", {key: 2})
 		])
 
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes.map(function (node) {
 			return node.id
 		}).join() === "div-1,div-3,div-2"
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", function () {}))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes.length === 0
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", "foo", m("a")))
 		m.render(root, m("div", "test"))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes.length === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		// if an element is preceded by a conditional, it should not lose its
 		// identity
 		var root = mock.document.createElement("div")
 		m.render(root, m("div", [m("a"), m("input[autofocus]")]))
-		await mock.requestAnimationFrame.$resolve()
 		var before = root.childNodes[0].childNodes[1]
 		m.render(root, m("div", [undefined, m("input[autofocus]")]))
-		await mock.requestAnimationFrame.$resolve()
 		var after = root.childNodes[0].childNodes[1]
 		return before === after
 	})
 
-	await test(async function () {
+	test(function () {
 		// unkeyed element should maintain identity if mixed w/ keyed elements
 		// and identity can be inferred
 		var root = mock.document.createElement("div")
@@ -3026,7 +2931,6 @@
 			m("a", {key: 3}),
 			m("i")
 		]))
-		await mock.requestAnimationFrame.$resolve()
 
 		var before = root.childNodes[0].childNodes[3]
 
@@ -3036,14 +2940,13 @@
 			m("i"),
 			m("b", {key: 1})
 		]))
-		await mock.requestAnimationFrame.$resolve()
 
 		var after = root.childNodes[0].childNodes[2]
 
 		return before === after
 	})
 
-	await test(async function () {
+	test(function () {
 		// unkeyed element should maintain identity if mixed w/ keyed elements
 		// and text nodes and identity can be inferred
 		var root = mock.document.createElement("div")
@@ -3055,7 +2958,6 @@
 			m("a", {key: 3}),
 			m("i")
 		]))
-		await mock.requestAnimationFrame.$resolve()
 
 		var before = root.childNodes[0].childNodes[4]
 
@@ -3066,14 +2968,13 @@
 			m("i"),
 			m("a", {key: 1})
 		]))
-		await mock.requestAnimationFrame.$resolve()
 
 		var after = root.childNodes[0].childNodes[3]
 
 		return before === after
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 
 		m.render(root, m("div", [
@@ -3083,7 +2984,6 @@
 			m("a", {key: 3}),
 			m("i")
 		]))
-		await mock.requestAnimationFrame.$resolve()
 
 		var before = root.childNodes[0].childNodes[4]
 
@@ -3094,14 +2994,13 @@
 			m("i"),
 			m("a", {key: 1})
 		]))
-		await mock.requestAnimationFrame.$resolve()
 
 		var after = root.childNodes[0].childNodes[3]
 
 		return before === after
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 
 		m.render(root, m("div", [
@@ -3111,7 +3010,6 @@
 			m("a", {key: 3}),
 			m("i")
 		]))
-		await mock.requestAnimationFrame.$resolve()
 
 		var before = root.childNodes[0].childNodes[4]
 
@@ -3122,14 +3020,13 @@
 			m("i"),
 			m("a", {key: 1})
 		]))
-		await mock.requestAnimationFrame.$resolve()
 
 		var after = root.childNodes[0].childNodes[3]
 
 		return before === after
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 
 		m.render(root, m("div", [
@@ -3139,7 +3036,6 @@
 			m("a", {key: 3}),
 			m("i")
 		]))
-		await mock.requestAnimationFrame.$resolve()
 
 		var before = root.childNodes[0].childNodes[4]
 
@@ -3150,33 +3046,30 @@
 			m("i"),
 			m("a", {key: 1})
 		]))
-		await mock.requestAnimationFrame.$resolve()
 
 		var after = root.childNodes[0].childNodes[3]
 
 		return before === after
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		var vdom = m("div.a", {class: undefined})
 		m.render(root, vdom)
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].class === "a"
 	})
 
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m(".a", [1]))
 		m.render(root, m(".a", []))
-		await mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].childNodes.length === 0
 	})
 	// end m.render
 
 	// m.redraw
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		var controller
 		var root = mock.document.createElement("div")
 		m.mount(root, {
@@ -3188,39 +3081,39 @@
 			view: function (ctrl) { return ctrl.value }
 		})
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var valueBefore = root.childNodes[0].nodeValue
 		controller.value = "foo"
 
 		m.redraw()
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		return valueBefore === "" && root.childNodes[0].nodeValue === "foo"
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		var count = 0
 		var root = mock.document.createElement("div")
 		m.mount(root, {
 			controller: function () {},
 			view: function () { count++ }
 		})
-		await mock.requestAnimationFrame.$resolve() // teardown
+		mock.requestAnimationFrame.$resolve() // teardown
 		m.redraw() // should run synchronously
 
 		m.redraw() // rest should run asynchronously since they're spamming
 		m.redraw()
 		m.redraw()
-		await mock.requestAnimationFrame.$resolve() // teardown
+		mock.requestAnimationFrame.$resolve() // teardown
 
 		return count === 3
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		var count = 0
 		var root = mock.document.createElement("div")
 
@@ -3231,7 +3124,7 @@
 			}
 		})
 
-		await mock.requestAnimationFrame.$resolve() // teardown
+		mock.requestAnimationFrame.$resolve() // teardown
 
 		m.redraw(true) // should run synchronously
 
@@ -3239,13 +3132,13 @@
 		m.redraw(true)
 		m.redraw(true)
 
-		await mock.requestAnimationFrame.$resolve() // teardown
+		mock.requestAnimationFrame.$resolve() // teardown
 		return count === 5
 	})
 
 	// m.route
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -3258,7 +3151,7 @@
 			}
 		})
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = mock.location.search === "?/test1" &&
 			root.childNodes[0].nodeValue === "foo"
@@ -3268,8 +3161,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.pathname = "/"
 
 		var root = mock.document.createElement("div")
@@ -3285,7 +3178,7 @@
 				}
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = mock.location.pathname === "/test2" &&
 			root.childNodes[0].nodeValue === "foo" &&
@@ -3296,8 +3189,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.hash = "#"
 
 		var root = mock.document.createElement("div")
@@ -3308,7 +3201,7 @@
 				view: function () { return "foo" }
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = mock.location.hash === "#/test3" &&
 			root.childNodes[0].nodeValue === "foo"
@@ -3318,8 +3211,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -3330,7 +3223,7 @@
 				view: function () { return m.route.param("test") }
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = mock.location.search === "?/test4/foo" &&
 			root.childNodes[0].nodeValue === "foo"
@@ -3340,8 +3233,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var component = {
@@ -3356,10 +3249,10 @@
 			"/test5/:test": component
 		})
 		var paramValueBefore = m.route.param("test")
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.route("/")
 		var paramValueAfter = m.route.param("test")
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = mock.location.search === "?/" &&
 			paramValueBefore === "foo" &&
@@ -3370,8 +3263,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var component = {
@@ -3386,10 +3279,10 @@
 			"/test6/:a1": component
 		})
 		var paramValueBefore = m.route.param("a1")
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.route("/")
 		var paramValueAfter = m.route.param("a1")
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = mock.location.search === "?/" &&
 			paramValueBefore === "foo" &&
@@ -3400,9 +3293,9 @@
 		return result
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/61
-		await mock.requestAnimationFrame.$resolve() // setup
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var component = {
@@ -3417,10 +3310,10 @@
 			"/test7/:a1": component
 		})
 		var routeValueBefore = m.route()
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.route("/")
 		var routeValueAfter = m.route()
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = routeValueBefore === "/test7/foo" &&
 			routeValueAfter === "/"
@@ -3430,8 +3323,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -3444,7 +3337,7 @@
 				}
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = mock.location.search === "?/test8/foo/SEP/bar/baz" &&
 			root.childNodes[0].nodeValue === "foo_bar/baz"
@@ -3454,8 +3347,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -3468,7 +3361,7 @@
 				}
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = mock.location.search === "?/test9/foo/bar/SEP/baz" &&
 			root.childNodes[0].nodeValue === "foo/bar_baz"
@@ -3478,8 +3371,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -3492,7 +3385,7 @@
 				}
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = root.childNodes[0].nodeValue === "foo bar"
 
@@ -3501,8 +3394,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -3517,9 +3410,9 @@
 				view: function () { return "bar" }
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.route("/test11/")
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = mock.location.search === "?/test11/" &&
 			root.childNodes[0].nodeValue === "bar"
@@ -3529,8 +3422,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -3539,9 +3432,9 @@
 			"/": {controller: function () {}, view: function () {}},
 			"/test12": {controller: function () {}, view: function () {}}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.route("/test12?a=foo&b=bar")
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = mock.location.search === "?/test12?a=foo&b=bar" &&
 			m.route.param("a") === "foo" &&
@@ -3552,8 +3445,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -3568,9 +3461,9 @@
 				view: function () { return m.route.param("test") }
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.route("/test13/foo?test=bar")
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = mock.location.search === "?/test13/foo?test=bar" &&
 			root.childNodes[0].nodeValue === "foo"
@@ -3580,8 +3473,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -3596,9 +3489,9 @@
 				view: function () { return "foo" }
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.route("/test14?test&test2=")
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = mock.location.search === "?/test14?test&test2=" &&
 			m.route.param("test") == null &&
@@ -3609,8 +3502,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -3619,9 +3512,9 @@
 			"/": {controller: function () {}, view: function () {}},
 			"/test12": {controller: function () {}, view: function () {}}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.route("/test12", {a: "foo", b: "bar"})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = mock.location.search === "?/test12?a=foo&b=bar" &&
 			m.route.param("a") === "foo" &&
@@ -3632,9 +3525,9 @@
 		return result
 	})
 
-	await test(async function () {
+	test(function () {
 		// test route params returning params object if no key is given
-		await mock.requestAnimationFrame.$resolve() // setup
+		mock.requestAnimationFrame.$resolve() // setup
 
 		var root = mock.document.createElement("div")
 		m.route.mode = "search"
@@ -3642,9 +3535,9 @@
 			"/": {controller: function () {}, view: function () {}},
 			"/test12": {controller: function () {}, view: function () {}}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.route("/test12", {a: "foo", b: "bar"})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var params = m.route.param()
 
@@ -3655,8 +3548,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -3672,9 +3565,9 @@
 				view: function () {}
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.route("/test13")
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = route1 === "/" && route2 === "/test13"
 
@@ -3683,8 +3576,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -3705,9 +3598,9 @@
 			},
 			"/test14": {controller: function () {}, view: function () {}}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.route("/test14")
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = unloaded === 1
 
@@ -3716,8 +3609,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -3746,9 +3639,9 @@
 				}
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.route("/test15")
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = unloaded === 1
 
@@ -3757,8 +3650,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -3784,9 +3677,9 @@
 				}
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.route("/test16")
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = unloaded === 1
 
@@ -3795,8 +3688,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -3824,9 +3717,9 @@
 				}
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.route("/test17")
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = unloaded === 1
 
@@ -3835,8 +3728,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -3862,9 +3755,9 @@
 				}
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.route("/test18")
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = unloaded === 1
 
@@ -3873,8 +3766,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -3912,9 +3805,9 @@
 				}
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.route("/test20")
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = unloaded === 1
 
@@ -3923,8 +3816,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -3961,9 +3854,9 @@
 				}
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.route("/test21")
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = unloaded === 1
 
@@ -3972,8 +3865,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -3992,10 +3885,10 @@
 				}
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		var foo = root.childNodes[0].childNodes[0].nodeValue
 		m.route("/bar")
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		var bar = root.childNodes[0].childNodes[0].nodeValue
 
 		var result = (foo === "foo" && bar === "bar")
@@ -4005,8 +3898,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4031,9 +3924,9 @@
 				}
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.route("/bar1")
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = unloaded === 1
 
@@ -4042,8 +3935,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4060,7 +3953,7 @@
 				}
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = strategy === "all" && root.childNodes.length === 0
 
@@ -4069,8 +3962,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4095,9 +3988,9 @@
 				}
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.route("/bar1")
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = strategy === "all" && count === 1
 
@@ -4106,8 +3999,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4126,7 +4019,7 @@
 			}
 		})
 		root.childNodes[0].onclick({})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = strategy === "diff" &&
 			root.childNodes[0].childNodes[0].nodeValue === "1"
@@ -4136,8 +4029,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4158,7 +4051,7 @@
 			}
 		})
 		root.childNodes[0].onclick({})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = count === 2
 
@@ -4167,8 +4060,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4188,8 +4081,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4204,9 +4097,9 @@
 				view: function () { return "bar" }
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.route(String("/test22/"))
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = mock.location.search === "?/test22/" &&
 			root.childNodes[0].nodeValue === "bar"
@@ -4216,8 +4109,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4232,9 +4125,9 @@
 				view: function () { return "bar" }
 			}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		m.route(new String("/test23/")) // eslint-disable-line no-new-wrappers
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = mock.location.search === "?/test23/" &&
 			root.childNodes[0].nodeValue === "bar"
@@ -4244,8 +4137,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4263,8 +4156,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve() // setup
+	test(function () {
+		mock.requestAnimationFrame.$resolve() // setup
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4287,8 +4180,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve()
+	test(function () {
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4305,7 +4198,7 @@
 			"/a": a,
 			"/b": b
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = root.childNodes[0].nodeValue === "b"
 
@@ -4314,8 +4207,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve()
+	test(function () {
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4334,7 +4227,7 @@
 			"/": a,
 			"/b": b
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = mock.location.search === "?/b?foo=2"
 
@@ -4343,8 +4236,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve()
+	test(function () {
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 		mock.history.$$length = 0
 
@@ -4362,11 +4255,11 @@
 			"/a": a,
 			"/b": b
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/b")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = mock.history.$$length === 1
 
@@ -4375,8 +4268,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve()
+	test(function () {
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 		mock.history.$$length = 0
 
@@ -4394,11 +4287,11 @@
 			"/a": a,
 			"/b": b
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/a")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = mock.history.$$length === 0
 
@@ -4407,8 +4300,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve()
+	test(function () {
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4430,11 +4323,11 @@
 			"/a": a,
 			"/b": b
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/b")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = initCount === 2
 
@@ -4443,8 +4336,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve()
+	test(function () {
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4467,11 +4360,11 @@
 			"/a": a,
 			"/b": b
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/b")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = initCount === 2
 
@@ -4480,8 +4373,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve()
+	test(function () {
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4504,11 +4397,11 @@
 			"/a": a,
 			"/b": b
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/b")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = initCount === 1
 
@@ -4517,8 +4410,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve()
+	test(function () {
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4540,11 +4433,11 @@
 			"/a": a,
 			"/b": b
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/b")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = initCount === 1
 
@@ -4553,8 +4446,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve()
+	test(function () {
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4577,11 +4470,11 @@
 			"/a": a,
 			"/b": b
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/b")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = initCount === 1
 
@@ -4590,8 +4483,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve()
+	test(function () {
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4614,11 +4507,11 @@
 			"/a": a,
 			"/b": b
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/b")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = initCount === 2
 
@@ -4627,8 +4520,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve()
+	test(function () {
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4656,11 +4549,11 @@
 			"/a": a,
 			"/b": b
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/b")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = initCount === 1
 
@@ -4669,8 +4562,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve()
+	test(function () {
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4698,11 +4591,11 @@
 			"/a": a,
 			"/b": b
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/b")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = initCount === 2
 
@@ -4711,8 +4604,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve()
+	test(function () {
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4738,11 +4631,11 @@
 			"/a": a,
 			"/b": b
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/b")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = initCount === 2
 
@@ -4751,8 +4644,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve()
+	test(function () {
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4780,11 +4673,11 @@
 			"/a": a,
 			"/b": b
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/b")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = initCount === 1
 
@@ -4793,8 +4686,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve()
+	test(function () {
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4822,11 +4715,11 @@
 			"/a": a,
 			"/b": b
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/b")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = initCount === 2
 
@@ -4835,8 +4728,8 @@
 		return result
 	})
 
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve()
+	test(function () {
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4862,11 +4755,11 @@
 			"/a": a,
 			"/b": b
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/b")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		var result = initCount === 1
 
@@ -4875,9 +4768,9 @@
 		return result
 	})
 
-	await test(async function () {
+	test(function () {
 		// retain flag should work inside component
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4905,11 +4798,11 @@
 			"/a": {view: function () { return m("div", a) }},
 			"/b": {view: function () { return m("div", b) }}
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/b")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		var result = initCount === 1
 
 		m.mount(root, null) // teardown
@@ -4917,9 +4810,9 @@
 		return result
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/pull/571
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		mock.location.search = "?"
 
 		var root = mock.document.createElement("div")
@@ -4942,11 +4835,11 @@
 			"/a": a,
 			"/b": b
 		})
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.route("/b")
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		var result = !root.childNodes[0].childNodes[0].modified
 
 		m.mount(root, null) // teardown
@@ -4956,7 +4849,7 @@
 	// end m.route
 
 	// m.route.parseQueryString
-	await test(async function () {
+	test(function () {
 		var str = "foo=bar&hello%5B%5D=world&hello%5B%5D=mars&hello%5B%5D=pluto"
 		var args = m.route.parseQueryString(str)
 
@@ -4966,7 +4859,7 @@
 			args["hello[]"].indexOf("pluto") > -1
 	})
 
-	await test(async function () {
+	test(function () {
 		var str = "foo=bar&hello=world&hello=mars&bam=&yup"
 		var args = m.route.parseQueryString(str)
 
@@ -4977,13 +4870,13 @@
 			args.yup == null
 	})
 
-	await test(async function () {
+	test(function () {
 		var args = m.route.parseQueryString("")
 		return Object.keys(args).length === 0
 	})
 
 	// m.route.buildQueryString
-	await test(async function () {
+	test(function () {
 		var string = m.route.buildQueryString({
 			foo: "bar",
 			hello: ["world", "mars", "mars"],
@@ -4999,34 +4892,34 @@
 		return string === expected
 	})
 
-	await test(async function () {
+	test(function () {
 		var string = m.route.buildQueryString({})
 		return string === ""
 	})
 
 	// m.prop
-	await test(async function () {
+	test(function () {
 		var prop = m.prop("test")
 		return prop() === "test"
 	})
 
-	await test(async function () {
+	test(function () {
 		var prop = m.prop("test")
 		prop("foo")
 		return prop() === "foo"
 	})
 
-	await test(async function () {
+	test(function () {
 		var prop = m.prop("test")
 		return JSON.stringify(prop) === '"test"'
 	})
 
-	await test(async function () {
+	test(function () {
 		var obj = {prop: m.prop("test")}
 		return JSON.stringify(obj) === '{"prop":"test"}'
 	})
 
-	await test(async function () {
+	test(function () {
 		var defer = m.deferred()
 		var prop = m.prop(defer.promise)
 		defer.resolve("test")
@@ -5034,7 +4927,7 @@
 		return prop() === "test"
 	})
 
-	await test(async function () {
+	test(function () {
 		var defer = m.deferred()
 		var prop = m.prop(defer.promise).then(function () {
 			return "test2"
@@ -5044,26 +4937,26 @@
 		return prop() === "test2"
 	})
 
-	await test(async function () {
+	test(function () {
 		var prop = m.prop(null)
 		return prop() === null
 	})
 
 	// m.request
-	await test(async function () {
+	test(function () {
 		var prop = m.request({method: "GET", url: "test"})
 		mock.XMLHttpRequest.$instances.pop().onreadystatechange()
 		return prop().method === "GET" && prop().url === "test"
 	})
 
-	await test(async function () {
+	test(function () {
 		var prop = m.request({method: "GET", url: "test"})
 			.then(function () { return "foo" })
 		mock.XMLHttpRequest.$instances.pop().onreadystatechange()
 		return prop() === "foo"
 	})
 
-	await test(async function () {
+	test(function () {
 		var prop = m.request({
 			method: "POST", url: "http://domain.com:80",
 			data: {}
@@ -5074,7 +4967,7 @@
 		return prop().url === "http://domain.com:80"
 	})
 
-	await test(async function () {
+	test(function () {
 		var prop = m.request({
 			method: "POST",
 			url: "http://domain.com:80/:test1",
@@ -5085,7 +4978,7 @@
 		return prop().url === "http://domain.com:80/foo"
 	})
 
-	await test(async function () {
+	test(function () {
 		var error = m.prop("no error")
 
 		var prop = m.request({
@@ -5099,7 +4992,7 @@
 			error().message === "error occurred"
 	})
 
-	await test(async function () {
+	test(function () {
 		var error = m.prop("no error")
 
 		var prop = m.request({
@@ -5113,7 +5006,7 @@
 			error().message === "error occurred"
 	})
 
-	await test(async function () {
+	test(function () {
 		var error = m.prop("no error")
 		var exception
 
@@ -5134,7 +5027,7 @@
 			exception.message === "error occurred"
 	})
 
-	await test(async function () {
+	test(function () {
 		var error = m.prop("no error")
 
 		m.request({method: "POST", url: "test", data: {foo: 1}})
@@ -5148,7 +5041,7 @@
 		return xhr.$headers["Content-Type"] === expected
 	})
 
-	await test(async function () {
+	test(function () {
 		var error = m.prop("no error")
 		m.request({method: "POST", url: "test"}).then(null, error)
 		var xhr = mock.XMLHttpRequest.$instances.pop()
@@ -5156,7 +5049,7 @@
 		return xhr.$headers["Content-Type"] === undefined
 	})
 
-	await test(async function () {
+	test(function () {
 		var prop = m.request({method: "POST", url: "test", initialValue: "foo"})
 		.then(function (data) { return data })
 
@@ -5166,7 +5059,7 @@
 		return initialValue === "foo"
 	})
 
-	await test(async function () {
+	test(function () {
 		var prop = m.request({method: "POST", url: "test", initialValue: "foo"})
 		var initialValue = prop()
 		mock.XMLHttpRequest.$instances.pop().onreadystatechange()
@@ -5174,32 +5067,32 @@
 		return initialValue === "foo"
 	})
 
-	await test(async function () {
+	test(function () {
 		var prop = m.request({method: "POST", url: "test", initialValue: "foo"})
 		.then(function () { return "bar" })
 		mock.XMLHttpRequest.$instances.pop().onreadystatechange()
 		return prop() === "bar"
 	})
 
-	await test(async function () {
+	test(function () {
 		var prop = m.request({method: "GET", url: "test", data: {foo: 1}})
 		mock.XMLHttpRequest.$instances.pop().onreadystatechange()
 		return prop().url === "test?foo=1"
 	})
 
-	await test(async function () {
+	test(function () {
 		var prop = m.request({method: "POST", url: "test", data: {foo: 1}})
 		mock.XMLHttpRequest.$instances.pop().onreadystatechange()
 		return prop().url === "test"
 	})
 
-	await test(async function () {
+	test(function () {
 		var prop = m.request({method: "GET", url: "test", data: {foo: [1, 2]}})
 		mock.XMLHttpRequest.$instances.pop().onreadystatechange()
 		return prop().url === "test?foo=1&foo=2"
 	})
 
-	await test(async function () {
+	test(function () {
 		var value
 		var prop1 = m.request({method: "GET", url: "test", initialValue: 123})
 
@@ -5219,12 +5112,12 @@
 	})
 
 	// m.request over jsonp
-	await test(async function (){
+	test(function (){
 		// script tags cannot be appended directly on the document
-if(!document.body){		var body = mock.document.createElement("body")
+		var body = mock.document.createElement("body")
 		mock.document.body = body
-		document.querySelector('html').appendChild(body)
-}
+		mock.document.appendChild(body)
+
 		var	error = m.prop("no error")
 		var data
 		m.request({url: "/test", dataType: "jsonp"})
@@ -5237,17 +5130,17 @@ if(!document.body){		var body = mock.document.createElement("body")
 			return script.src.indexOf(callbackKey) > -1
 		}).pop()
 		mock[callbackKey]({foo: "bar"})
-		if(mock!=window) mock.document.removeChild(body)
+		mock.document.removeChild(body)
 		return scriptTag.src.indexOf("/test?callback=mithril_callback") > -1 &&
 			data.foo === "bar"
 	})
 
-	await test(async function (){
+	test(function (){
 		// script tags cannot be appended directly on the document
-if(!document.body){		var body = mock.document.createElement("body")
+		var body = mock.document.createElement("body")
 		mock.document.body = body
-		document.querySelector('html').appendChild(body)
-}
+		mock.document.appendChild(body)
+
 		var	error = m.prop("no error")
 		var data
 		m.request({
@@ -5266,18 +5159,18 @@ if(!document.body){		var body = mock.document.createElement("body")
 		}).pop()
 
 		mock[callbackKey]({foo: "bar1"})
-		if(mock!=window) mock.document.removeChild(body)
+		mock.document.removeChild(body)
 
 		var url = "/test?jsonpCallback=mithril_callback"
 		return scriptTag.src.indexOf(url) > -1 &&
 			data.foo === "bar1"
 	})
 
-	await test(async function (){
-if(!document.body){		var body = mock.document.createElement("body")
+	test(function (){
+		var body = mock.document.createElement("body")
 		mock.document.body = body
-		document.querySelector('html').appendChild(body)
-}
+		mock.document.appendChild(body)
+
 		var req = m.request({url: "/test", dataType: "jsonp"})
 		var callbackKey = Object.keys(mock).filter(function (globalKey){
 			return globalKey.indexOf("mithril_callback") > -1
@@ -5288,15 +5181,15 @@ if(!document.body){		var body = mock.document.createElement("body")
 		}).pop()
 		mock[callbackKey]({foo: "bar1"})
 		var out = {foo: "bar1"}
-		if(mock!=window) mock.document.removeChild(body)
+		mock.document.removeChild(body)
 		return JSON.stringify(out) === JSON.stringify(req())
 	})
 
-	await test(async function (){
-if(!document.body){		var body = mock.document.createElement("body")
+	test(function (){
+		var body = mock.document.createElement("body")
 		mock.document.body = body
-		document.querySelector('html').appendChild(body)
-}
+		mock.document.appendChild(body)
+
 		m.request({url: "/test", dataType: "jsonp", data: {foo: "bar"}})
 		var callbackKey = Object.keys(mock).filter(function (globalKey){
 			return globalKey.indexOf("mithril_callback") > -1
@@ -5309,11 +5202,11 @@ if(!document.body){		var body = mock.document.createElement("body")
 		return scriptTag.src.indexOf("foo=bar") > -1
 	})
 
-	await test(async function (){
-if(!document.body){		var body = mock.document.createElement("body")
+	test(function (){
+		var body = mock.document.createElement("body")
 		mock.document.body = body
-		document.querySelector('html').appendChild(body)
-}
+		mock.document.appendChild(body)
+
 		m.request({
 			url: "/test",
 			dataType: "jsonp",
@@ -5328,12 +5221,12 @@ if(!document.body){		var body = mock.document.createElement("body")
 			return script.src.indexOf(callbackKey) > -1
 		}).pop()
 		mock[callbackKey]({foo: "bar"})
-		if(mock!=window) mock.document.removeChild(body)
+		mock.document.removeChild(body)
 		return scriptTag.src.match(/foo=bar/g).length === 1
 	})
 
 	// m.deferred
-	await test(async function () {
+	test(function () {
 		var deferred = m.deferred()
 		var value
 		deferred.promise.then(function (data) { value = data })
@@ -5341,7 +5234,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 		return value === "test"
 	})
 
-	await test(async function () {
+	test(function () {
 		var deferred = m.deferred()
 		var value
 
@@ -5353,7 +5246,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 		return value === "foo"
 	})
 
-	await test(async function () {
+	test(function () {
 		var deferred = m.deferred()
 		var value
 		deferred.promise.then(null, function (data) { value = data })
@@ -5361,7 +5254,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 		return value === "test"
 	})
 
-	await test(async function () {
+	test(function () {
 		var value
 		var deferred = m.deferred()
 		deferred.promise.catch(function (data) { value = data })
@@ -5369,7 +5262,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 		return value === "test"
 	})
 
-	await test(async function () {
+	test(function () {
 		var deferred = m.deferred()
 		var value
 
@@ -5381,7 +5274,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 		return value === "foo"
 	})
 
-	await test(async function () {
+	test(function () {
 		var deferred = m.deferred()
 		var value
 
@@ -5393,7 +5286,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 		return value === "foo"
 	})
 
-	await test(async function () {
+	test(function () {
 		var deferred = m.deferred()
 		var value1, value2
 
@@ -5405,7 +5298,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 		return value1 === undefined && value2 instanceof Error
 	})
 
-	await test(async function () {
+	test(function () {
 		// Let unchecked exceptions bubble up in order to allow meaningful error
 		// messages in common cases like null reference exceptions due to typos
 		//
@@ -5461,7 +5354,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 			(value3 instanceof ReferenceError || value3 instanceof TypeError)
 	})
 
-	await test(async function () {
+	test(function () {
 		var deferred1 = m.deferred()
 		var deferred2 = m.deferred()
 		var value1, value2
@@ -5476,7 +5369,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 		return value1 === 1 && value2 === 2
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/80
 		var deferred = m.deferred()
 		var value
@@ -5489,7 +5382,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 		return value === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/80
 		var deferred = m.deferred()
 		var value
@@ -5502,7 +5395,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 		return value === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/80
 		var deferred = m.deferred()
 		var value
@@ -5514,7 +5407,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 		return value === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/80
 		var deferred = m.deferred()
 		var value
@@ -5526,7 +5419,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 		return value === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/80
 		var deferred = m.deferred()
 		var value1, value2
@@ -5540,7 +5433,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 		return value1 === 1 && value2 === undefined
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/80
 		var deferred = m.deferred()
 		var value1, value2
@@ -5554,7 +5447,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 		return value1 === undefined && value2 === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/80
 		var deferred = m.deferred()
 		var value
@@ -5566,7 +5459,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 		return value === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/85
 		var deferred = m.deferred()
 		var value
@@ -5577,7 +5470,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 		return value === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		// https://github.com/lhorie/mithril.js/issues/85
 		var deferred = m.deferred()
 		var value
@@ -5588,27 +5481,27 @@ if(!document.body){		var body = mock.document.createElement("body")
 		return value === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		var deferred = m.deferred()
 		deferred.resolve(1)
 		return deferred.promise() === 1
 	})
 
-	await test(async function () {
+	test(function () {
 		var deferred = m.deferred()
 		var promise = deferred.promise.then(function (data) { return data + 1 })
 		deferred.resolve(1)
 		return promise() === 2
 	})
 
-	await test(async function () {
+	test(function () {
 		var deferred = m.deferred()
 		deferred.reject(1)
 		return deferred.promise() === undefined
 	})
 
 	// m.sync
-	await test(async function () {
+	test(function () {
 		var value
 		var deferred1 = m.deferred()
 		var deferred2 = m.deferred()
@@ -5621,7 +5514,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 		return value[0] === "test" && value[1] === "foo"
 	})
 
-	await test(async function () {
+	test(function () {
 		var value
 		var deferred1 = m.deferred()
 		var deferred2 = m.deferred()
@@ -5634,7 +5527,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 		return value[0] === "test" && value[1] === "foo"
 	})
 
-	await test(async function () {
+	test(function () {
 		var value
 		var deferred = m.deferred()
 		m.sync([deferred.promise]).catch(function (data) { value = data })
@@ -5642,21 +5535,21 @@ if(!document.body){		var body = mock.document.createElement("body")
 		return value[0] === "fail"
 	})
 
-	await test(async function () {
+	test(function () {
 		var value = 1
 		m.sync([]).then(function () { value = 2 })
 		return value === 2
 	})
 
-	await test(async function () {
+	test(function () {
 		var success
 		m.sync([]).then(function (value) { success = value instanceof Array })
 		return success
 	})
 
 	// m.startComputation/m.endComputation
-	await test(async function () {
-		await mock.requestAnimationFrame.$resolve()
+	test(function () {
+		mock.requestAnimationFrame.$resolve()
 
 		var root = mock.document.createElement("div")
 		var controller = m.mount(root, {
@@ -5664,17 +5557,17 @@ if(!document.body){		var body = mock.document.createElement("body")
 			view: function (ctrl) { return ctrl.value }
 		})
 
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 
 		m.startComputation()
 		controller.value = "foo"
 		m.endComputation()
-		await mock.requestAnimationFrame.$resolve()
+		mock.requestAnimationFrame.$resolve()
 		return root.childNodes[0].nodeValue === "foo"
 	})
 
 	// config context
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 
 		var success = false
@@ -5691,7 +5584,7 @@ if(!document.body){		var body = mock.document.createElement("body")
 	})
 
 	// more complex config context
-	await test(async function () {
+	test(function () {
 		var root = mock.document.createElement("div")
 
 		var idx = 0

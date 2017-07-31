@@ -12,7 +12,7 @@
 	}
 
 	global.test = test
-	function test(condition) {
+	async function test(condition) {
 		test.total++
 
 		try {
