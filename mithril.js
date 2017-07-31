@@ -382,22 +382,22 @@ function isDifferentEnough (data, cached, dataAttrKeys) {
 
     // try to patch diff node
 
-    var node = cached.nodes[0]
-    if(!node) return true
+    // var node = cached.nodes[0]
+    // if(!node) return true
 
-    var ns = getObjectNamespace(cached) || node.namespaceURI || node._namespace
+    // var ns = getObjectNamespace(cached) || node.namespaceURI || node._namespace
 
-    // 1. remove all cached attrs except style
-    for(var key in cached.attrs){
-      if(data.attrs[key]) { // only remove key that not in data
-        continue
-      }
-      if(ns) node.removeAttributeNS(ns, key)
-      else node.removeAttribute(key)
-    }
+    // // 1. remove all cached attrs except style
+    // for(var key in cached.attrs){
+    //   if(data.attrs[key]) { // only remove key that not in data
+    //     continue
+    //   }
+    //   if(ns) node.removeAttributeNS(ns, key)
+    //   else node.removeAttribute(key)
+    // }
     
-    // 2. set attrs for new data
-    setAttributes(node, data.tag, data.attrs, cached.attrs, ns)
+    // // 2. set attrs for new data
+    // setAttributes(node, data.tag, data.attrs, cached.attrs, ns)
 
     // return true
   }
@@ -406,7 +406,7 @@ function isDifferentEnough (data, cached, dataAttrKeys) {
 }
 
 // futurist: add xor, _onremove
-function xor(x,y){return true==(!!x!==!!y)}
+// function xor(x,y){return true==(!!x!==!!y)}
 
 function _onremove (cached){
   if(!cached || !cached.attrs) return
