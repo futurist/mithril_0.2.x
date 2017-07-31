@@ -964,7 +964,9 @@ controller._domRoot = configs.root
       var dataAttrKeys = Object.keys(data.attrs)
       var hasKeys = dataAttrKeys.length > ('key' in data.attrs ? 1 : 0)
 
-      maybeRecreateObject(data, cached, dataAttrKeys, controllerIndex < 0)
+      // futurist: add force args to force recreate
+      // maybeRecreateObject(data, cached, dataAttrKeys, controllerIndex < 0)
+      maybeRecreateObject(data, cached, dataAttrKeys, false)
 
       if (!isString(data.tag)) return
 
