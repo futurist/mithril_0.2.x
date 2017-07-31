@@ -375,9 +375,6 @@ function isDifferentEnough (data, cached, dataAttrKeys) {
     return cached.configContext && cached.configContext.retain === false
   }
 
-  var node = cached.nodes[0]
-  if(!node) return true
-
   if (dataAttrKeys.sort().join() !==
 				Object.keys(cached.attrs).sort().join()) {
 
@@ -385,6 +382,9 @@ function isDifferentEnough (data, cached, dataAttrKeys) {
   //   return true
   // }
     // try to patch diff node
+
+    var node = cached.nodes[0]
+    if(!node) return true
 
     var ns = getObjectNamespace(cached) || node.namespaceURI || node._namespace
 
@@ -423,9 +423,9 @@ function _onremove (cached){
   }
 }
 
-function maybeRecreateObject (data, cached, dataAttrKeys) {
+function maybeRecreateObject (data, cached, dataAttrKeys, force) {
 		// if an element is different enough from the one in cache, recreate it
-  if (isDifferentEnough(data, cached, dataAttrKeys)) {
+  if (isDifferentEnough(data, cached, dataAttrKeys) || force) {
     // console.log('recreate', data)
     // futurist: fix issue #1200, REVERTED!!!
     // !!!!! THIS FIX IS BAD, since it will call onunload repeated, unnecessaryly
@@ -969,7 +969,7 @@ controller._domRoot = configs.root
       var dataAttrKeys = Object.keys(data.attrs)
       var hasKeys = dataAttrKeys.length > ('key' in data.attrs ? 1 : 0)
 
-      maybeRecreateObject(data, cached, dataAttrKeys)
+      maybeRecreateObject(data, cached, dataAttrKeys, controllerIndex < 0)
 
       if (!isString(data.tag)) return
 
