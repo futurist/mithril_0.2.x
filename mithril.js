@@ -367,14 +367,6 @@ function isDifferentEnough (data, cached, dataAttrKeys) {
     return true
   }
 
-  if (m.redraw.strategy() === 'all') {
-    return !cached.configContext || cached.configContext.retain !== true
-  }
-
-  if (m.redraw.strategy() === 'diff') {
-    return cached.configContext && cached.configContext.retain === false
-  }
-
   if (dataAttrKeys.sort().join() !==
 				Object.keys(cached.attrs).sort().join()) {
   
@@ -399,7 +391,15 @@ function isDifferentEnough (data, cached, dataAttrKeys) {
     // // 2. set attrs for new data
     // setAttributes(node, data.tag, data.attrs, cached.attrs, ns)
 
-    // return true
+    // return false
+  }
+
+  if (m.redraw.strategy() === 'all') {
+    return !cached.configContext || cached.configContext.retain !== true
+  }
+
+  if (m.redraw.strategy() === 'diff') {
+    return cached.configContext && cached.configContext.retain === false
   }
 
   return false
