@@ -14,11 +14,12 @@
 	global.test = test
 	async function test(condition) {
 		test.total++
-
+		console.log(test.total)
 		try {
-			if (!condition()) throw new Error("failed")
+			if (!await condition()) throw new Error("failed")
 		} catch (e) {
 			console.error(e) // eslint-disable-line no-console
+			console.log(condition)
 			test.failures.push(condition)
 		}
 	}

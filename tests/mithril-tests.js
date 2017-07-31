@@ -11,8 +11,11 @@
 	}
 	await onload()
 	console.log('onloaded', document.body, mock!=window)
+
+	window.scrollTo = function () {}
+
 	window.requestAnimationFrame.$resolve = function(){
-		return new Promise((s)=>setTimeout(s, 1000000))
+		return new Promise((s)=>setTimeout(s, 100))
 	}
 	// window.addEventListener('unhandledrejection', event => {
 	// 		// Prevent error output on the console:

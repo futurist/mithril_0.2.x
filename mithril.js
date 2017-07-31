@@ -2452,7 +2452,7 @@ function handleJsonp (options) {
   var script = $document.createElement('script')
 
   global[callbackKey] = function (resp) {
-    script.parentNode && script.parentNode.removeChild(script)
+    script.parentNode.removeChild(script)
     options.onload({
       type: 'load',
       target: {
@@ -2463,7 +2463,7 @@ function handleJsonp (options) {
   }
 
   script.onerror = function () {
-    script.parentNode && script.parentNode.removeChild(script)
+    script.parentNode.removeChild(script)
 
     options.onerror({
       type: 'error',
