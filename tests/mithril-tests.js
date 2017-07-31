@@ -6,7 +6,7 @@ function map(list, fn){
 	return [].map.call(list, fn)
 }
 
-;(async function () { // eslint-disable-line max-statements
+;(async function (config) { // eslint-disable-line max-statements
 	"use strict"
 	if(!useRealDom){
 		m.deps(mock.window)
@@ -5748,7 +5748,21 @@ if(!useRealDom){		var body = mock.document.createElement("body")
 		return success
 	})
 
-	test.print(function (value) {
-		console.log(value) // eslint-disable-line no-console
+	await test(async function () {
+		console.time('perf')
+		var root = mock.document.createElement("div")
+		var getClass = i=>i%2? 'abc' : ''
+		for(let i=0; i<10000; i++){
+			m.render(root, m("div", {class: getClass(i) }))
+		}
+		console.timeEnd('perf')
+		return true
 	})
-})()
+
+	test.print(function (value) {
+		var totalTime = config &&  +new Date() - config.start
+		console.log(value, totalTime) // eslint-disable-line no-console
+	})
+})({
+	start: +new Date()
+})

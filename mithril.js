@@ -389,15 +389,11 @@ function isDifferentEnough (data, cached, dataAttrKeys) {
 
     // 1. remove all cached attrs except style
     for(var key in cached.attrs){
-      if(key=='style') {
-        if(data.attrs.style) {
-          continue
-        }
+      if(data.attrs[key]) { // only remove key that not in data
+        continue
       }
-      if(key in node) {
-        if(ns) node.removeAttributeNS(ns, key)
-        else node.removeAttribute(key)
-      }
+      if(ns) node.removeAttributeNS(ns, key)
+      else node.removeAttribute(key)
     }
     
     // 2. set attrs for new data

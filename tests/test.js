@@ -19,7 +19,7 @@
 		if(useRealDom 
 			&& /m\.request|m\.route|contenteditable/.test(
 				condition.toString())) return
-		// if(!name) return
+		// if(!arg) return
 		try {
 			if (!await condition()) throw new Error("failed")
 		} catch (e) {
