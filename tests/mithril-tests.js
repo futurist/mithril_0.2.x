@@ -20,7 +20,7 @@ function map(list, fn){
 		}
 		// await onload()  // window.onload?
 
-		console.log('onloaded', document.body, mock!=window)
+		console.log('useRealDom:', useRealDom)
 
 		window.scrollTo = function () {}
 
