@@ -63,7 +63,56 @@ function map(list, fn){
 	// ***** futurist: add more tests *****
 
 
-	// test for ctrl.$freeze for nested dom
+	// test for $redrawAll===false will partial redraw for m.mount
+	await test(async function () {
+		var root1 = mock.document.createElement("div")
+		var ctrl1 = 0
+		var ctrl2 = 0
+		var ctrlSub = 0
+		var viewSub = 0
+
+		var sub = {
+			controller: function(){
+				ctrlSub++
+			},
+				view: function(ctrl){
+					return m('', viewSub++)
+				}
+			}
+
+		var mod1 = m.mount(root1, {
+			controller: function () { this.value = 0; ctrl1++ },
+			view: function (ctrl) { ctrl.value++; return m(sub) }
+		})
+
+		await nextFrame()
+
+		var root2 = mock.document.createElement("div")
+		var mod2 = m.mount(root2, {
+			$redrawAll: false,  // partial redraw for enter component
+			controller: function () { 
+				this.value = 0; ctrl2++ 
+				this.onunload = function(){
+					return false  // partial redraw for leave component
+				}
+			},
+			view: function (ctrl) { return ctrl.value++ }
+		})
+
+		await nextFrame()
+
+		m.mount(root2, null)
+
+		await nextFrame()
+
+		// console.log(ctrl1, ctrl2, ctrlSub, viewSub, mod1.value, mod2.value)
+
+		return ctrlSub==1 && viewSub==3 && mod1.value==3
+		
+	})
+	// return
+
+	// test for attrs.$freeze for nested dom
 	await test(async function () {
 		var root = mock.document.createElement("div")
 		var cls = 'abc'
@@ -93,7 +142,6 @@ function map(list, fn){
 		var after = root.childNodes[0]
 		var afterA1 = root.childNodes[0].childNodes[0]
 		var afterA2 = root.childNodes[0].childNodes[1]
-		console.log(after)
 
 		return before == after
 		&& after.className == 'abc'
@@ -101,7 +149,7 @@ function map(list, fn){
 		&& beforeA2!==afterA2
 	})
 
-	// test for ctrl.$freeze for sub component
+	// test for attrs.$freeze for sub component
 	await test(async function () {
 		var root = mock.document.createElement("div")
 		var cls = 'abc'
@@ -119,7 +167,7 @@ function map(list, fn){
 		var beforeDiv = root.childNodes[0]
 		var beforeSpan = root.childNodes[0].childNodes[0]
 
-		// ctrl.$freeze = true
+		// attrs.$freeze = true
 		cls = 'cde'
 		m.redraw()
 		await nextFrame()
@@ -132,7 +180,7 @@ function map(list, fn){
 		&& afterSpan.className=='abc'
 	})
 
-	// test for ctrl.$freeze for root component
+	// test for attrs.$freeze for root component
 	await test(async function () {
 		var root = mock.document.createElement("div")
 		var cls = 'abc'

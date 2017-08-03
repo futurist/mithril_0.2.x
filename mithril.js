@@ -1729,8 +1729,11 @@ m.mount = m.module = function (root, component, path) {
   if (index < 0) index = roots.length
   else var ctrl = controllers[index]
 
-  // futurist add: com.path to get route path
-  if(component) component.path = path
+  // futurist add: com.$path to get route path
+  if(component) {
+    var isPartialRedraw = component.$redrawAll===false
+    // component.$path = path
+  }
 
   var isPrevented = false
   var event = {
@@ -1762,14 +1765,14 @@ m.mount = m.module = function (root, component, path) {
   }
 
   if (ctrl && isFunction(ctrl.onunload)) {
-    ctrl.onunload(event)
+    var isPartialRedraw = ctrl.onunload(event) === false
   }
 
 
   // function checkPrevented (component, root, index, isPrevented) 
   {
   if (!isPrevented) {
-    m.redraw.strategy('all')
+    if(!isPartialRedraw) m.redraw.strategy('all')
     m.startComputation()
     roots[index] = root
     var currentComponent
