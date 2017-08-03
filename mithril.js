@@ -1768,11 +1768,12 @@ m.mount = m.module = function (root, component, path) {
     var isPartialRedraw = ctrl.onunload(event) === false
   }
 
+  if(m.$redrawAll === false) isPartialRedraw = true
 
   // function checkPrevented (component, root, index, isPrevented) 
   {
   if (!isPrevented) {
-    if(!isPartialRedraw) m.redraw.strategy('all')
+    if(!isPartialRedraw || path) m.redraw.strategy('all')
     m.startComputation()
     roots[index] = root
     var currentComponent
