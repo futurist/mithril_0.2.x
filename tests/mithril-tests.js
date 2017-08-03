@@ -62,28 +62,64 @@ function map(list, fn){
 
 	// ***** futurist: add more tests *****
 
-	// test for ctrl.$retain for sub component
+
+	// test for ctrl.$freeze for nested dom
+	await test(async function () {
+		var root = mock.document.createElement("div")
+		var cls = 'abc'
+		var ctrl = m.mount(root, m.component({
+			view: function(ctrl){
+				return m('div', {
+					// config:(a,b,c)=>{c.$freeze=true}, 
+					$freeze: true,
+					className:cls, 
+					key: cls
+				}, [
+					m('.a1', {$freeze: true, id:cls}, 'test1'),
+					m('.a2', {id: cls+'a2'}, 'test2'),
+				])
+			}
+		}))
+		await nextFrame()
+		var before = root.childNodes[0]
+		var beforeA1 = root.childNodes[0].childNodes[0]
+		var beforeA2 = root.childNodes[0].childNodes[1]
+		
+		cls = 'cde'
+		m.redraw()
+
+		await nextFrame()
+
+		var after = root.childNodes[0]
+		var afterA1 = root.childNodes[0].childNodes[0]
+		var afterA2 = root.childNodes[0].childNodes[1]
+		console.log(after)
+
+		return before == after
+		&& after.className == 'abc'
+		&& beforeA1==afterA1 
+		&& beforeA2!==afterA2
+	})
+
+	// test for ctrl.$freeze for sub component
 	await test(async function () {
 		var root = mock.document.createElement("div")
 		var cls = 'abc'
 		var sub = {
 			view: function(){
-				return m('span', {className: cls, id: cls}, 'sub')
+				return m('span', {$freeze:true, className: cls, id: cls}, 'sub')
 			}
 		}
 		var ctrl = m.mount(root, m.component({
-			controller: function(){
-				this.$retain = true
-			},
 			view: function(ctrl){
-				return m('div', {className: cls, id: cls}, sub)
+				return m('div', {$freeze:true, className: cls, id: cls}, m(sub))
 			}
 		}))
 		await nextFrame()
 		var beforeDiv = root.childNodes[0]
 		var beforeSpan = root.childNodes[0].childNodes[0]
 
-		// ctrl.$retain = true
+		// ctrl.$freeze = true
 		cls = 'cde'
 		m.redraw()
 		await nextFrame()
@@ -91,20 +127,20 @@ function map(list, fn){
 		var afterDiv = root.childNodes[0]
 		var afterSpan = root.childNodes[0].childNodes[0]
 
-		return beforeDiv == afterDiv && beforeSpan != afterSpan
+		return beforeDiv == afterDiv 
+		&& beforeSpan == afterSpan 
+		&& afterSpan.className=='abc'
 	})
 
-
-	// test for ctrl.$retain for root component
+	// test for ctrl.$freeze for root component
 	await test(async function () {
 		var root = mock.document.createElement("div")
 		var cls = 'abc'
+		var freeze = true
+
 		var ctrl = m.mount(root, m.component({
-			controller: function(){
-				this.$retain = true
-			},
 			view: function(ctrl){
-				return m('div', {className:cls, key: cls}, 'test')
+				return m('div', {$freeze:freeze, className:cls, key: cls}, 'test')
 			}
 		}))
 		await nextFrame()
@@ -117,8 +153,16 @@ function map(list, fn){
 
 		var after = root.childNodes[0]
 
-		return before == after && after.className == 'cde'
+		freeze = false
+		m.redraw()
+		await nextFrame()
+
+		var third = root.childNodes[0]
+
+		return before == after && after.className == 'abc'
+		&& third != after && third.className == 'cde'
 	})
+	// return
 
 	// test for ctrl._cached && ctrl._domRoot for sub component
 	await test(async function () {

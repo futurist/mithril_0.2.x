@@ -914,7 +914,9 @@ controller._domRoot = configs.root
           data = {tag: 'placeholder'}
         }
 
-        if (data.subtree === 'retain') {
+    var shouldFreeze = data.attrs && data.attrs.$freeze
+    
+        if (data.subtree === 'retain' || shouldFreeze) {
           // console.log('rrrrrrrrtain!!!!',controller, data)
           // return data
 
@@ -967,9 +969,9 @@ controller._domRoot = configs.root
       // futurist: add force args to force recreate
       // maybeRecreateObject(data, cached, dataAttrKeys, controllerIndex < 0)
       var ctrl = parentElement==configs.root ? configs.ctrl : controller
-      var shouldRetain = ctrl && ctrl._cached && ctrl.$retain
-      // console.log(ctrl, parentElement, (ctrl && ctrl._cached && ctrl.$retain))
-      if(!shouldRetain) maybeRecreateObject(data, cached, dataAttrKeys)
+      var shouldFreeze = data.attrs.$freeze
+      // console.log(ctrl, parentElement, (ctrl && ctrl._cached && ctrl.$freeze))
+      if(!shouldFreeze) maybeRecreateObject(data, cached, dataAttrKeys)
 
       if (!isString(data.tag)) return
 
@@ -1066,7 +1068,7 @@ controller._domRoot = configs.root
 {
   node = cached.nodes[0]
 
-  if (hasKeys) {
+  if (hasKeys && !shouldFreeze) {
     setAttributes(node, data.tag, data.attrs, cached.attrs, namespace)
   }
 
