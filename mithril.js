@@ -418,9 +418,9 @@ function _onremove (cached){
   }
 }
 
-function maybeRecreateObject (data, cached, dataAttrKeys, force) {
+function maybeRecreateObject (data, cached, dataAttrKeys) {
 		// if an element is different enough from the one in cache, recreate it
-  if (isDifferentEnough(data, cached, dataAttrKeys) || force) {
+  if (isDifferentEnough(data, cached, dataAttrKeys)) {
     // console.log('recreate', data)
     // futurist: fix issue #1200, REVERTED!!!
     // !!!!! THIS FIX IS BAD, since it will call onunload repeated, unnecessaryly
@@ -966,7 +966,10 @@ controller._domRoot = configs.root
 
       // futurist: add force args to force recreate
       // maybeRecreateObject(data, cached, dataAttrKeys, controllerIndex < 0)
-      maybeRecreateObject(data, cached, dataAttrKeys, false)
+      var ctrl = parentElement==configs.root ? configs.ctrl : controller
+      var shouldRetain = ctrl && ctrl._cached && ctrl.$retain
+      // console.log(ctrl, parentElement, (ctrl && ctrl._cached && ctrl.$retain))
+      if(!shouldRetain) maybeRecreateObject(data, cached, dataAttrKeys)
 
       if (!isString(data.tag)) return
 
@@ -1548,6 +1551,8 @@ m.render = function (root, cell, forceRecreation) {
   var isDocumentRoot = root === $document
   var node
 
+  var ctrl = controllers[id]
+  
   if (isDocumentRoot || root === $document.documentElement) {
     node = documentNode
   } else {
@@ -1572,6 +1577,7 @@ m.render = function (root, cell, forceRecreation) {
 
   // futurist: add configs.root to set to ctrl._domRoot later
   configs.root=node
+  configs.ctrl=ctrl
   configs._rootId=id
 
   cellCache[id] = build(
@@ -1587,13 +1593,9 @@ m.render = function (root, cell, forceRecreation) {
 			undefined,
 			configs)
   
-  var mountIndex = roots.indexOf(node)
-  if(mountIndex>-1){
-    var ctrl = controllers[mountIndex]
-    if(ctrl) ctrl._cached = cellCache[id]
-  }
+  // futurist: add ctrl._cached
+  if(ctrl) ctrl._cached = cellCache[id]
 
-  
   // futurist: sort config according $order
   configs.sort(function(a,b){return b.$order-a.$order})
   forEach(configs, function (config) { config() })

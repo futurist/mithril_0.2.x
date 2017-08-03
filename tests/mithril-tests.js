@@ -60,6 +60,100 @@ function map(list, fn){
 		else return new Promise((s=>s()))
 	}
 
+	// ***** futurist: add more tests *****
+
+	// test for ctrl.$retain for sub component
+	await test(async function () {
+		var root = mock.document.createElement("div")
+		var cls = 'abc'
+		var sub = {
+			view: function(){
+				return m('span', {className: cls, id: cls}, 'sub')
+			}
+		}
+		var ctrl = m.mount(root, m.component({
+			controller: function(){
+				this.$retain = true
+			},
+			view: function(ctrl){
+				return m('div', {className: cls, id: cls}, sub)
+			}
+		}))
+		await nextFrame()
+		var beforeDiv = root.childNodes[0]
+		var beforeSpan = root.childNodes[0].childNodes[0]
+
+		// ctrl.$retain = true
+		cls = 'cde'
+		m.redraw()
+		await nextFrame()
+
+		var afterDiv = root.childNodes[0]
+		var afterSpan = root.childNodes[0].childNodes[0]
+
+		return beforeDiv == afterDiv && beforeSpan != afterSpan
+	})
+
+
+	// test for ctrl.$retain for root component
+	await test(async function () {
+		var root = mock.document.createElement("div")
+		var cls = 'abc'
+		var ctrl = m.mount(root, m.component({
+			controller: function(){
+				this.$retain = true
+			},
+			view: function(ctrl){
+				return m('div', {className:cls, key: cls}, 'test')
+			}
+		}))
+		await nextFrame()
+		var before = root.childNodes[0]
+		
+		cls = 'cde'
+		m.redraw()
+
+		await nextFrame()
+
+		var after = root.childNodes[0]
+
+		return before == after && after.className == 'cde'
+	})
+
+	// test for ctrl._cached && ctrl._domRoot for sub component
+	await test(async function () {
+		var root = mock.document.createElement("div")
+		var cls = 'abc'
+		var sub = {
+			view: function(){
+				return m('span', {class: cls}, 'sub')
+			}
+		}
+		var ctrl = m.mount(root, m.component({
+			view: function(ctrl){
+				return m('div', sub)
+			}
+		}))
+		await nextFrame()
+
+		return ctrl._cached.children[0].controllers[0]._cached.tag=='span'
+		&& ctrl._cached.children[0].controllers[0]._domRoot.tagName.toUpperCase()=='DIV'
+	})
+
+	// test for ctrl._cached && ctrl._domRoot for root component
+	await test(async function () {
+		var root = mock.document.createElement("div")
+		var cls = 'abc'
+		var ctrl = m.mount(root, m.component({
+			view: function(ctrl){
+				return m('div', {class:cls}, 'test')
+			}
+		}))
+		await nextFrame()
+
+		return ctrl._cached.tag == 'div' && ctrl._domRoot.tagName.toUpperCase() == 'DIV'
+	})
+
 	// m
 	await test(async function () { return typeof m.version() === "string" })
 	await test(async function () { return m("div").tag === "div" })
@@ -1833,7 +1927,7 @@ function map(list, fn){
 	await test(async function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("svg", [m("g")]))
-		nextFrame()
+		await nextFrame()
 		var g = root.childNodes[0].childNodes[0]
 		return g.nodeName.toUpperCase() === "G" &&
 			g.namespaceURI === "http://www.w3.org/2000/svg"
@@ -1842,7 +1936,7 @@ function map(list, fn){
 	await test(async function () {
 		var root = mock.document.createElement("div")
 		m.render(root, m("svg", [m("a[href='http://google.com']")]))
-		nextFrame()
+		await nextFrame()
 		return root.childNodes[0].childNodes[0].nodeName.toUpperCase() === "A"
 	})
 
@@ -1850,7 +1944,7 @@ function map(list, fn){
 		var root = mock.document.createElement("div")
 		m.render(root, m("div.classname", [m("a", {href: "/first"})]))
 		m.render(root, m("div", [m("a", {href: "/second"})]))
-		nextFrame()
+		await nextFrame()
 		return root.childNodes[0].childNodes.length === 1
 	})
 
@@ -1858,7 +1952,7 @@ function map(list, fn){
 		var root = mock.document.createElement("div")
 		m.render(root, m("ul", [m("li")]))
 		m.render(root, m("ul", [m("li"), undefined]))
-		nextFrame()
+		await nextFrame()
 		return root.childNodes[0].childNodes[1].nodeValue === ""
 	})
 
@@ -1866,7 +1960,7 @@ function map(list, fn){
 		var root = mock.document.createElement("div")
 		m.render(root, m("ul", [m("li"), m("li")]))
 		m.render(root, m("ul", [m("li"), undefined]))
-		nextFrame()
+		await nextFrame()
 		return root.childNodes[0].childNodes[1].nodeValue === ""
 	})
 
@@ -1874,7 +1968,7 @@ function map(list, fn){
 		var root = mock.document.createElement("div")
 		m.render(root, m("ul", [m("li")]))
 		m.render(root, m("ul", [undefined]))
-		nextFrame()
+		await nextFrame()
 		return root.childNodes[0].childNodes[0].nodeValue === ""
 	})
 
@@ -1882,7 +1976,7 @@ function map(list, fn){
 		var root = mock.document.createElement("div")
 		m.render(root, m("ul", [m("li")]))
 		m.render(root, m("ul", [{}]))
-		nextFrame()
+		await nextFrame()
 		return root.childNodes[0].childNodes.length === 0
 	})
 
@@ -1890,7 +1984,7 @@ function map(list, fn){
 		var root = mock.document.createElement("div")
 		m.render(root, m("ul", [m("li")]))
 		m.render(root, m("ul", [{tag: "b", attrs: {}}]))
-		nextFrame()
+		await nextFrame()
 		return root.childNodes[0].childNodes[0].nodeName === "B"
 	})
 
@@ -1899,7 +1993,7 @@ function map(list, fn){
 		m.render(root, m("ul", [m("li")]))
 		/* eslint-disable no-new-wrappers */
 		m.render(root, m("ul", [{tag: new String("b"), attrs: {}}]))
-		nextFrame()
+		await nextFrame()
 		/* eslint-enable no-new-wrappers */
 		return root.childNodes[0].childNodes[0].nodeName === "B"
 	})
