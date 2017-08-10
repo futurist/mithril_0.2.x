@@ -1601,6 +1601,8 @@ m.render = function (root, cell, forceRecreation) {
   // futurist: sort config according $order
   configs.sort(function(a,b){return b.$order-a.$order})
   forEach(configs, function (config) { config() })
+
+  if(ctrl) ctrl.onload && ctrl.onload()
 }
 
 function getCellCacheKey (element) {
@@ -1768,7 +1770,7 @@ m.mount = m.module = function (root, component, path) {
     var isPartialRedraw = ctrl.onunload(event) === false
   }
 
-  if(m.$redrawAll === false) isPartialRedraw = true
+  if(m.redraw.$redrawAll === false) isPartialRedraw = true
 
   // function checkPrevented (component, root, index, isPrevented) 
   {
@@ -1838,6 +1840,7 @@ m.redraw = function (force) {
   redrawing = true
   if (force) forcing = true
   pendingRedraw = m.deferred()
+  m.redraw.status = pendingRedraw
 
   // futurist: debug
   // force = true
