@@ -1210,7 +1210,10 @@ function sortChanges (a, b) {
 
 function copyStyleAttrs (node, dataAttr, cachedAttr) {
 		if (cachedAttr === dataAttr) {
-			node.style = ""
+      // node.style = ""
+
+      // futuist: fix readOnly throw in safari
+			node.style.cssText = ''
 			cachedAttr = {}
 		}
   for (var rule in dataAttr) {
@@ -1904,7 +1907,7 @@ function redraw () {
     if (ctrl) {
       var args = [ctrl]
       m.render(root,
-					component.view ? component.view(ctrl, args) : '')
+					component.view ? component.view(ctrl) : '')
     }
   })
 		// after rendering within a routed context, we need to scroll back to

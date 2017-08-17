@@ -25,7 +25,7 @@ function map(list, fn){
 		window.scrollTo = function () {}
 
 		window.requestAnimationFrame.$resolve = function(){
-			return new Promise((s)=>setTimeout(s, 100))
+			return new Promise((s)=>setTimeout(s, 33))
 		}
 		// window.addEventListener('unhandledrejection', event => {
 		// 		// Prevent error output on the console:
@@ -55,9 +55,9 @@ function map(list, fn){
 	}
 
 	var nextFrame = ()=> {
-		const r = window.requestAnimationFrame.$resolve
+		const r = mock.requestAnimationFrame.$resolve
 		if(r) return r()
-		else return new Promise((s=>s()))
+		else return new Promise((s => setTimeout(s, 33) ))
 	}
 
 	// ***** futurist: add more tests *****
@@ -223,13 +223,15 @@ function map(list, fn){
 		}
 		var ctrl = m.mount(root, m.component({
 			view: function(ctrl){
-				return m('div', sub)
+				return m('nav', sub)
 			}
 		}))
 		await nextFrame()
 
-		return ctrl._cached.children[0].controllers[0]._cached.tag=='span'
-		&& ctrl._cached.children[0].controllers[0]._domRoot.tagName.toUpperCase()=='DIV'
+		const c = ctrl._cached.children[0].controllers[0]
+
+		return c._cached.tag=='span'
+		&& c._domRoot.nodeName.toUpperCase()=='DIV'
 	})
 
 	// test for ctrl._cached && ctrl._domRoot for root component
@@ -238,12 +240,12 @@ function map(list, fn){
 		var cls = 'abc'
 		var ctrl = m.mount(root, m.component({
 			view: function(ctrl){
-				return m('div', {class:cls}, 'test')
+				return m('nav', {class:cls}, 'test')
 			}
 		}))
 		await nextFrame()
 
-		return ctrl._cached.tag == 'div' && ctrl._domRoot.tagName.toUpperCase() == 'DIV'
+		return ctrl._cached.tag == 'nav' && ctrl._domRoot.nodeName.toUpperCase() == 'DIV'
 	})
 
 	// m
