@@ -1905,7 +1905,8 @@ function redraw () {
     // futurist: add ctrl.preventRedraw check
     var ctrl = controllers[i]
     if (ctrl) {
-      var args = [ctrl]
+      // futurist: remove args for root component
+      // var args = [ctrl]
       m.render(root,
 					component.view ? component.view(ctrl) : '')
     }

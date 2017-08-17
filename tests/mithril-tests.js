@@ -461,17 +461,68 @@ function map(list, fn){
 		await mock.requestAnimationFrame.$resolve()
 
 		var root = mock.document.createElement("div")
-		var slot1, slot2
+		var slot1, slot2, count=0
 		var component = {
 			controller: function (options) { slot1 = options.a },
-			view: function (ctrl, options) { slot2 = options.a }
+			view: function (ctrl, options) { count++, slot2 = options.a }
 		}
 		m.mount(root, m.component(component, {a: 1}))
 
 		await mock.requestAnimationFrame.$resolve()
 
-		return slot1 === 1 && slot2 === 1
+		const ok1 = slot1 === 1 && slot2 === 1
+
+		m.redraw()
+		await nextFrame()
+
+		const ok2 = slot1 === 1 && slot2 === 1
+
+		return ok1 && ok2 && count==2
+
 	})
+
+	await test(async function () {
+		// component should pass args to both controller and view for sub-component
+		await mock.requestAnimationFrame.$resolve()
+
+		var root = mock.document.createElement("div")
+		var slot1, slot2, count=0
+		var component = {
+			controller: function (options) { slot1 = options.a },
+			view: function (ctrl, options) { 
+				count++
+				slot2 = options.a
+				return m('')
+			}
+		}
+
+		var root1, root2
+		// for root component, arg always undefined
+		var componentRoot = {
+			controller: function (arg) {
+				root2 = arg===undefined
+				this.a = 1 
+			},
+			view: function (ctrl, arg) { 
+				root1 = arg===undefined
+				return m('', m(component, ctrl)) 
+			}
+		}
+		m.mount(root, componentRoot)
+
+		await mock.requestAnimationFrame.$resolve()
+
+		const ok1 = slot1 === 1 && slot2 === 1
+
+		m.redraw()
+		await nextFrame()
+
+		const ok2 = slot1 === 1 && slot2 === 1
+
+		return ok1 && ok2 && count==2 && root1 && root2
+
+	})
+
 
 	await test(async function () {
 		// component should work without controller
