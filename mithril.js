@@ -1108,6 +1108,9 @@ controller._domRoot = configs.root
             namespace)
         }
 
+      // futurist: fix !isNew parent lost bug (menuCenter bug)
+      if(node.parentElement != parentElement) shouldReattach = true
+
       if (!isNew && shouldReattach === true && node != null) {
         insertNode(parentElement, node, index)
       }
@@ -1211,9 +1214,9 @@ function sortChanges (a, b) {
 function copyStyleAttrs (node, dataAttr, cachedAttr) {
 		if (cachedAttr === dataAttr) {
       // node.style = ""
-
-      // futuist: fix readOnly throw in safari
-			node.style.cssText = ''
+      // futurist: fix safari throw: cannot assign to readOnly prop
+      // node.removeAttribute('style')
+      node.style.cssText = ''
 			cachedAttr = {}
 		}
   for (var rule in dataAttr) {
@@ -1974,6 +1977,8 @@ var isDefaultRoute = false
         m.route(arg1, true)
         isDefaultRoute = false
       }
+
+      // futurst: add m.route.callback
       m.route.callback && m.route.callback(source, event)
     }
 
